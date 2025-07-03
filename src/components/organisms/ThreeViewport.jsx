@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
-import { motion } from "framer-motion";
-import * as THREE from "three";
-import ApperIcon from "@/components/ApperIcon";
+import React, { useEffect, useRef, useState } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Box, Grid, OrbitControls, Plane, Text } from '@react-three/drei'
+import { motion } from 'framer-motion'
+import * as THREE from 'three'
+import ApperIcon from '@/components/ApperIcon'
 
 // Room component that renders the 3D room structure
 function Room({ room, selectedObject, onObjectSelect }) {
@@ -101,7 +101,7 @@ function Room({ room, selectedObject, onObjectSelect }) {
 
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
-const meshRef = useRef();
+  const meshRef = useRef();
   
   // Move useFrame hook before any early returns
   useFrame(() => {
@@ -121,15 +121,21 @@ const meshRef = useRef();
   const { width = 1, height = 1 } = wall.dimensions;
   const { x = 0, z = 0 } = wall.position;
   
+  // Handle rotation - support both scalar and object formats
+  const getRotationY = () => {
+    if (!wall.rotation) return 0;
+    return typeof wall.rotation === 'object' ? (wall.rotation.y || 0) : wall.rotation;
+  };
+  
   return (
     <Box
       ref={meshRef}
       args={[width, height, 0.1]}
       position={[x, height / 2, z]}
-      rotation={[0, wall.rotation || 0, 0]}
+      rotation={[0, getRotationY(), 0]}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect();
+        onSelect?.();
       }}
     >
       <meshStandardMaterial color={wall.color || '#ffffff'} />
@@ -138,7 +144,7 @@ const meshRef = useRef();
 }
 // Furniture Component
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
-const meshRef = useRef();
+  const meshRef = useRef();
   
   // Move useFrame hook before any early returns
   useFrame(() => {
@@ -202,18 +208,26 @@ const meshRef = useRef();
     }
   };
   
-  const { x = 0, z = 0 } = furniture.position;
-  const rotation = furniture.rotation || 0;
+  // Safely extract position with defaults
+  const { x = 0, y = 0, z = 0 } = furniture.position || {};
+  
+  // Handle rotation - support both scalar and object formats
+  const getRotationY = () => {
+    if (!furniture.rotation) return 0;
+    return typeof furniture.rotation === 'object' ? (furniture.rotation.y || 0) : furniture.rotation;
+  };
+  
+  const geometry = getFurnitureGeometry();
   
   return (
-    <group position={[x, 0, z]} rotation={[0, rotation, 0]}>
+    <group position={[x, y, z]} rotation={[0, getRotationY(), 0]}>
       <Box
         ref={meshRef}
-        args={getFurnitureGeometry()}
-        position={[0, getFurnitureGeometry()[1] / 2, 0]}
+        args={geometry}
+        position={[0, geometry[1] / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
-          onSelect();
+          onSelect?.();
         }}
       >
         <meshStandardMaterial color={getFurnitureColor()} />

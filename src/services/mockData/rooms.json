@@ -28,8 +28,8 @@
       {
         "id": "sofa1",
         "type": "sofa",
-        "position": { "x": 0, "y": 0, "z": 0 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#8b5cf6",
         "material": "fabric"
@@ -37,8 +37,8 @@
       {
         "id": "table1",
         "type": "table",
-        "position": { "x": 2, "y": 0, "z": 2 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": 2, "y": 0, "z": 2 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#f59e0b",
         "material": "wood"
@@ -59,8 +59,8 @@
       {
         "id": "bed1",
         "type": "bed",
-        "position": { "x": 0, "y": 0, "z": -2 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": 0, "y": 0, "z": -2 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#06b6d4",
         "material": "fabric"
@@ -68,8 +68,8 @@
       {
         "id": "wardrobe1",
         "type": "wardrobe",
-        "position": { "x": -3, "y": 0, "z": -4 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": -3, "y": 0, "z": -4 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#ef4444",
         "material": "wood"
@@ -90,8 +90,8 @@
       {
         "id": "desk1",
         "type": "desk",
-        "position": { "x": 0, "y": 0, "z": -1 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": 0, "y": 0, "z": -1 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#3b82f6",
         "material": "wood"
@@ -99,8 +99,8 @@
       {
         "id": "chair1",
         "type": "chair",
-        "position": { "x": 0, "y": 0, "z": 1 },
-        "rotation": { "x": 0, "y": 0, "z": 0 },
+"position": { "x": 0, "y": 0, "z": 1 },
+        "rotation": 0,
         "scale": { "x": 1, "y": 1, "z": 1 },
         "color": "#10b981",
         "material": "plastic"
