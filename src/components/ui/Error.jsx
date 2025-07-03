@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import ApperIcon from '@/components/ApperIcon';
 
-const Error = ({ message = "Something went wrong", onRetry }) => {
+const Error = ({ message = "Something went wrong", description, onRetry, technicalDetails }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-red-50 to-orange-50">
       <motion.div
@@ -49,15 +49,35 @@ const Error = ({ message = "Something went wrong", onRetry }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">
-            3D Engine Error
+<h3 className="text-2xl font-bold text-gray-800 mb-2">
+            {technicalDetails?.isThreeJsError ? '3D Engine Error' : 'Application Error'}
           </h3>
-          <p className="text-gray-600 mb-6 font-medium">
+          <p className="text-gray-600 mb-4 font-medium">
             {message}
           </p>
-          <p className="text-sm text-gray-500 mb-8">
-            This might be due to WebGL compatibility issues or network problems.
-          </p>
+          {description && (
+            <p className="text-sm text-gray-500 mb-6">
+              {description}
+            </p>
+          )}
+          
+          {/* Technical Details for Three.js errors */}
+          {technicalDetails && (
+            <div className="mb-6 p-3 bg-gray-50 rounded-lg border">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Technical Details:</h4>
+              <div className="text-xs text-gray-600 space-y-1">
+                {technicalDetails.webGLSupported !== undefined && (
+                  <div>WebGL Support: {technicalDetails.webGLSupported ? '✅ Supported' : '❌ Not Supported'}</div>
+                )}
+                {technicalDetails.isThreeJsError && (
+                  <div>Error Type: Three.js/WebGL Related</div>
+                )}
+                {technicalDetails.error && (
+                  <div className="break-all">Error: {technicalDetails.error}</div>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Action Buttons */}
@@ -97,10 +117,16 @@ const Error = ({ message = "Something went wrong", onRetry }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
         >
-          <h4 className="font-semibold text-gray-800 mb-2">Need Help?</h4>
-          <p className="text-sm text-gray-600">
-            Make sure your browser supports WebGL and try refreshing the page.
-          </p>
+<h4 className="font-semibold text-gray-800 mb-2">Need Help?</h4>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>• Make sure your browser supports WebGL</p>
+            <p>• Try refreshing the page</p>
+            <p>• Update your graphics drivers</p>
+            <p>• Try a different browser (Chrome, Firefox, Safari)</p>
+            {technicalDetails?.isThreeJsError && (
+              <p>• Check browser console for detailed error messages</p>
+            )}
+          </div>
         </motion.div>
       </motion.div>
     </div>

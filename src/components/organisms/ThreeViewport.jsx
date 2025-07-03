@@ -4,7 +4,6 @@ import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
 import { motion } from "framer-motion";
 import * as THREE from "three";
 import ApperIcon from "@/components/ApperIcon";
-
 // Room component that renders the 3D room structure
 function Room({ room, selectedObject, onObjectSelect }) {
   const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
@@ -115,27 +114,46 @@ function WallComponent({ wall, isSelected, onSelect }) {
     }
   }, [isSelected, wall]);
 
-  // Early return if wall object is invalid
-  if (!wall) {
+// Early return if wall object is invalid
+  if (!wall || typeof wall !== 'object') {
+    console.warn('Invalid wall object provided to WallComponent');
     return null;
   }
 
-  // Safe property access with fallback values
+  // Safe property access with fallback values and validation
   const { width = 1, height = 1 } = wall.dimensions || {};
   const { x = 0, z = 0 } = wall.position || {};
 
-  // Handle rotation - support both scalar and object formats
+  // Validate geometry values to prevent Three.js errors
+  const validatedGeometry = [
+    Math.max(0.1, Math.min(50, Number(width) || 1)),
+    Math.max(0.1, Math.min(50, Number(height) || 1)),
+    0.1
+  ];
+
+  // Validate position values
+  const validatedPosition = [
+    Number(x) || 0,
+    validatedGeometry[1] / 2,
+    Number(z) || 0
+  ];
+
+  // Handle rotation - support both scalar and object formats with validation
   const getRotationY = () => {
     if (!wall.rotation) return 0;
-    return typeof wall.rotation === 'object' ? (wall.rotation?.y || 0) : wall.rotation;
+    const rotation = typeof wall.rotation === 'object' ? (wall.rotation?.y || 0) : wall.rotation;
+    return Number(rotation) || 0;
   };
+
+  // Validate rotation
+  const validatedRotation = [0, getRotationY(), 0];
 
   return (
     <Box
       ref={meshRef}
-      args={[width, height, 0.1]}
-      position={[x, height / 2, z]}
-      rotation={[0, getRotationY(), 0]}
+      args={validatedGeometry}
+      position={validatedPosition}
+      rotation={validatedRotation}
       onClick={(e) => {
         e.stopPropagation();
         onSelect?.(wall);
@@ -146,33 +164,35 @@ function WallComponent({ wall, isSelected, onSelect }) {
   );
 }
 
-// Furniture Component
+// Furniture Component with enhanced validation and error handling
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
 
-  useEffect(() => {
-    // Skip effect if furniture is invalid
-    if (!furniture || !meshRef.current) return;
-    
-    if (isSelected) {
-      meshRef.current.material.color.setHex(0x10b981);
-    } else {
-      meshRef.current.material.color.setHex(getFurnitureColor());
-    }
-  }, [isSelected, furniture]);
-
   // Early return if furniture object is invalid
-  if (!furniture) {
+  if (!furniture || typeof furniture !== 'object') {
+    console.warn('Invalid furniture object provided to FurnitureComponent');
     return null;
   }
 
-  // Safe property access with fallback values
+  // Safe property access with fallback values and validation
   const { x = 0, y = 0, z = 0 } = furniture.position || {};
+
+  // Validate position values
+  const validatedPosition = [
+    Number(x) || 0,
+    Number(y) || 0,
+    Number(z) || 0
+  ];
 
   const getFurnitureGeometry = () => {
     if (furniture.dimensions) {
       const { width = 1, height = 1, depth = 1 } = furniture.dimensions || {};
-      return [width, height, depth];
+      // Validate and clamp geometry values
+      return [
+        Math.max(0.1, Math.min(10, Number(width) || 1)),
+        Math.max(0.1, Math.min(10, Number(height) || 1)),
+        Math.max(0.1, Math.min(10, Number(depth) || 1))
+      ];
     }
     
     // Safe type checking with fallback
@@ -197,7 +217,9 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
   
   const getFurnitureColor = () => {
     if (furniture.color) {
-      return furniture.color;
+      // Validate color value
+      const color = Number(furniture.color);
+      return !isNaN(color) ? color : 0x9ca3af;
     }
     
     // Safe type checking with fallback for color selection
@@ -222,20 +244,46 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
 
   const getRotationY = () => {
     if (!furniture.rotation) return 0;
-    return typeof furniture.rotation === 'object' ? (furniture.rotation?.y || 0) : furniture.rotation;
+    const rotation = typeof furniture.rotation === 'object' ? (furniture.rotation?.y || 0) : furniture.rotation;
+    return Number(rotation) || 0;
   };
   
+  // Get and validate geometry
   const geometry = getFurnitureGeometry();
   
+  // Validate geometry array
+  if (!Array.isArray(geometry) || geometry.length !== 3 || geometry.some(val => !isFinite(val))) {
+    console.warn('Invalid geometry calculated for furniture:', furniture);
+    return null;
+  }
+
+  // Validate rotation
+  const validatedRotation = [0, getRotationY(), 0];
+
+  useEffect(() => {
+    // Skip effect if furniture is invalid or mesh not ready
+    if (!furniture || !meshRef.current) return;
+    
+    try {
+      if (isSelected) {
+        meshRef.current.material.color.setHex(0x10b981);
+      } else {
+        meshRef.current.material.color.setHex(getFurnitureColor());
+      }
+    } catch (error) {
+      console.error('Error updating furniture material:', error);
+    }
+  }, [isSelected, furniture]);
+  
   return (
-    <group position={[x, y, z]} rotation={[0, getRotationY(), 0]}>
+    <group position={validatedPosition} rotation={validatedRotation}>
       <Box
         ref={meshRef}
         args={geometry}
         position={[0, geometry[1] / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
-          onSelect?.();
+          onSelect?.(furniture);
         }}
       >
         <meshStandardMaterial color={getFurnitureColor()} />
