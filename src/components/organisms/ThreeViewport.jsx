@@ -10,13 +10,11 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
   const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
   
   // Defensive checks for valid dimensions
+// Defensive checks for valid dimensions
   if (!width || !length || !height || width <= 0 || length <= 0 || height <= 0) {
     console.warn('Invalid room dimensions:', { width, length, height })
     return null
   }
-    return null
-  }
-  
   return (
     <group>
       {/* Floor */}

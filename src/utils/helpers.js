@@ -301,14 +301,14 @@ export const getFurnitureColor = (furniture) => {
       return 0x10b981;
     case 'chair':
       return 0xf59e0b;
-    case 'desk':
+case 'desk':
       return 0xef4444;
     case 'wardrobe':
-case 'wardrobe':
       return 0x6b7280;
     default:
       return 0x9ca3af;
   }
+};
 
 // Export room to JSON
 export const exportRoomToJSON = (room) => {
