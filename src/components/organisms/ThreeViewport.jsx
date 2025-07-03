@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Box, Grid, OrbitControls, Plane, Text } from '@react-three/drei'
-import { motion } from 'framer-motion'
-import * as THREE from 'three'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
+import { motion } from "framer-motion";
+import * as THREE from "three";
+import ApperIcon from "@/components/ApperIcon";
 
 // Room component that renders the 3D room structure
 function Room({ room, selectedObject, onObjectSelect }) {
@@ -100,43 +100,33 @@ function Room({ room, selectedObject, onObjectSelect }) {
 };
 
 // Wall Component
+// Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
   const meshRef = useRef();
-  
-  // useFrame must be called unconditionally - move all checks inside
-useFrame(() => {
-    // Only update material if we have valid wall data and mesh reference
-    if (meshRef.current && wall && wall.dimensions && wall.position) {
-      try {
-        // Ensure material exists and has emissive property
-        if (meshRef.current.material && meshRef.current.material.emissive) {
-          if (isSelected) {
-            meshRef.current.material.emissive.setHex(0x2563eb);
-          } else {
-            meshRef.current.material.emissive.setHex(0x000000);
-          }
-        }
-      } catch (error) {
-        console.warn('Error updating wall material:', error);
-      }
-    }
-  });
-  
-  // Defensive checks for wall data - after hooks
-  if (!wall || !wall.dimensions || !wall.position) {
-    console.warn('Invalid wall data:', wall);
+
+  // Early return if wall object is invalid
+  if (!wall) {
     return null;
   }
-  
-  const { width = 1, height = 1 } = wall.dimensions;
-  const { x = 0, z = 0 } = wall.position;
-  
+
+  useEffect(() => {
+    if (meshRef.current && isSelected) {
+      meshRef.current.material.color.setHex(0x3b82f6);
+    } else if (meshRef.current) {
+      meshRef.current.material.color.setHex(0x6b7280);
+    }
+  }, [isSelected]);
+
+  // Safe property access with fallback values
+  const { width = 1, height = 1 } = wall.dimensions || {};
+  const { x = 0, z = 0 } = wall.position || {};
+
   // Handle rotation - support both scalar and object formats
   const getRotationY = () => {
     if (!wall.rotation) return 0;
-    return typeof wall.rotation === 'object' ? (wall.rotation.y || 0) : wall.rotation;
+    return typeof wall.rotation === 'object' ? (wall.rotation?.y || 0) : wall.rotation;
   };
-  
+
   return (
     <Box
       ref={meshRef}
@@ -145,49 +135,43 @@ useFrame(() => {
       rotation={[0, getRotationY(), 0]}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect?.();
+        onSelect?.(wall);
       }}
     >
-      <meshStandardMaterial color={wall.color || '#ffffff'} />
+      <meshStandardMaterial color={isSelected ? 0x3b82f6 : 0x6b7280} />
     </Box>
   );
 }
+
 // Furniture Component
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
-  
-  // useFrame must be called unconditionally - move all checks inside
-useFrame(() => {
-    // Only update material if we have valid furniture data and mesh reference
-    if (meshRef.current && furniture && furniture.position) {
-      try {
-        // Ensure material exists and has emissive property
-        if (meshRef.current.material && meshRef.current.material.emissive) {
-          if (isSelected) {
-            meshRef.current.material.emissive.setHex(0x10b981);
-          } else {
-            meshRef.current.material.emissive.setHex(0x000000);
-          }
-        }
-      } catch (error) {
-        console.warn('Error updating furniture material:', error);
-      }
-    }
-  });
-  
-  // Defensive checks for furniture data - after hooks
-  if (!furniture || !furniture.position) {
-    console.warn('Invalid furniture data:', furniture);
+
+  // Early return if furniture object is invalid
+  if (!furniture) {
     return null;
   }
-  
+
+  useEffect(() => {
+    if (meshRef.current && isSelected) {
+      meshRef.current.material.color.setHex(0x10b981);
+    } else if (meshRef.current) {
+      meshRef.current.material.color.setHex(getFurnitureColor());
+    }
+  }, [isSelected]);
+
+  // Safe property access with fallback values
+  const { x = 0, y = 0, z = 0 } = furniture.position || {};
+
   const getFurnitureGeometry = () => {
     if (furniture.dimensions) {
-      const { width = 1, height = 1, depth = 1 } = furniture.dimensions;
+      const { width = 1, height = 1, depth = 1 } = furniture.dimensions || {};
       return [width, height, depth];
     }
     
-    switch (furniture.type) {
+    // Safe type checking with fallback
+    const furnitureType = furniture.type || 'default';
+    switch (furnitureType) {
       case 'sofa':
         return [2, 0.8, 1];
       case 'bed':
@@ -210,31 +194,29 @@ useFrame(() => {
       return furniture.color;
     }
     
-    switch (furniture.type) {
+    // Safe type checking with fallback for color selection
+    const furnitureType = furniture.type || 'default';
+    switch (furnitureType) {
       case 'sofa':
-        return '#8b5cf6';
+        return 0x8b5cf6;
       case 'bed':
-        return '#06b6d4';
+        return 0x3b82f6;
       case 'table':
-        return '#f59e0b';
+        return 0x10b981;
       case 'chair':
-        return '#10b981';
+        return 0xf59e0b;
       case 'desk':
-        return '#3b82f6';
+        return 0xef4444;
       case 'wardrobe':
-        return '#ef4444';
+        return 0x6b7280;
       default:
-        return '#8B4513';
+        return 0x9ca3af;
     }
   };
-  
-  // Safely extract position with defaults
-  const { x = 0, y = 0, z = 0 } = furniture.position || {};
-  
-  // Handle rotation - support both scalar and object formats
+
   const getRotationY = () => {
     if (!furniture.rotation) return 0;
-    return typeof furniture.rotation === 'object' ? (furniture.rotation.y || 0) : furniture.rotation;
+    return typeof furniture.rotation === 'object' ? (furniture.rotation?.y || 0) : furniture.rotation;
   };
   
   const geometry = getFurnitureGeometry();
@@ -412,7 +394,6 @@ const ThreeViewport = ({
         </motion.div>
       )}
 
-      {/* Room Dimensions Display */}
 {/* Room Dimensions Display */}
       {room?.dimensions && (
         <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-lg px-4 py-2 shadow-lg">
