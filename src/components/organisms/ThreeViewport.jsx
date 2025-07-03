@@ -177,8 +177,9 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, z: 0 });
 
-  // useEffect must be called before any early returns to maintain hook order
-useEffect(() => {
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+  // Material color effect - only runs when furniture is valid
+  useEffect(() => {
     // Skip effect if furniture is invalid or mesh not ready
     if (!furniture || typeof furniture !== 'object' || !meshRef.current) return;
     
@@ -192,7 +193,24 @@ useEffect(() => {
       console.error('Error updating furniture material:', error);
     }
   }, [isSelected, furniture, isDragging]);
-  // Early return if furniture object is invalid - MUST be after all hooks
+
+  // Global event listeners for drag operations - only runs when dragging
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleGlobalMove = (e) => handlePointerMove(e);
+    const handleGlobalUp = (e) => handlePointerUp(e);
+    
+    document.addEventListener('pointermove', handleGlobalMove);
+    document.addEventListener('pointerup', handleGlobalUp);
+    
+    return () => {
+      document.removeEventListener('pointermove', handleGlobalMove);
+      document.removeEventListener('pointerup', handleGlobalUp);
+    };
+  }, [isDragging, dragOffset, roomDimensions]);
+
+  // Early return AFTER all hooks - furniture validation
   if (!furniture || typeof furniture !== 'object') {
     console.warn('Invalid furniture object provided to FurnitureComponent');
     return null;
@@ -257,7 +275,7 @@ useEffect(() => {
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
   
-// Drag event handlers
+  // Drag event handlers
   const handlePointerDown = (e) => {
     if (!isDragMode) {
       e.stopPropagation();
@@ -345,22 +363,6 @@ useEffect(() => {
     }
   };
 
-  // Add global event listeners for drag operations
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMove = (e) => handlePointerMove(e);
-      const handleGlobalUp = (e) => handlePointerUp(e);
-      
-      document.addEventListener('pointermove', handleGlobalMove);
-      document.addEventListener('pointerup', handleGlobalUp);
-      
-      return () => {
-        document.removeEventListener('pointermove', handleGlobalMove);
-        document.removeEventListener('pointerup', handleGlobalUp);
-      };
-    }
-  }, [isDragging, dragOffset, geometry, roomDimensions]);
-
   return (
     <group 
       ref={groupRef}
@@ -398,7 +400,7 @@ useEffect(() => {
         </mesh>
       )}
     </group>
-);
+  );
 }
 // Scene Setup
 // Scene component that contains all 3D elements
