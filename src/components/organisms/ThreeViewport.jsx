@@ -101,13 +101,14 @@ function Room({ room, selectedObject, onObjectSelect }) {
 // Wall Component
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
-  // Early return if wall object is invalid - MUST be before any hooks
+  // CRITICAL: All hooks must be called before any conditional returns
+  const meshRef = useRef();
+
+  // Early return if wall object is invalid - MUST be after all hooks
   if (!wall || typeof wall !== 'object') {
     console.warn('Invalid wall object provided to WallComponent');
     return null;
   }
-
-  const meshRef = useRef();
 
   useEffect(() => {
     // Skip effect if wall is invalid or mesh not ready
