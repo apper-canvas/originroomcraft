@@ -1,14 +1,20 @@
-import { useRef, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Plane, Text } from '@react-three/drei';
-import { motion } from 'framer-motion';
-import * as THREE from 'three';
-import ApperIcon from '@/components/ApperIcon';
+import React, { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
+import { motion } from "framer-motion";
+import * as THREE from "three";
+import ApperIcon from "@/components/ApperIcon";
 
-// Room Component
-const Room = ({ room, selectedObject, onObjectSelect }) => {
-  const { width, length, height } = room.dimensions;
-
+// Room component that renders the 3D room structure
+function Room({ room, selectedObject, onObjectSelect }) {
+  const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
+  
+  // Defensive checks for valid dimensions
+  if (!width || !length || !height || width <= 0 || length <= 0 || height <= 0) {
+    console.warn('Invalid room dimensions:', { width, length, height })
+    return null
+  }
+  
   return (
     <group>
       {/* Floor */}
@@ -20,19 +26,21 @@ const Room = ({ room, selectedObject, onObjectSelect }) => {
       >
         <meshStandardMaterial color="#f8f9fa" />
       </Plane>
-
-      {/* Walls */}
-      {room.walls.map((wall) => (
-        <WallComponent
-          key={wall.id}
-          wall={wall}
-          isSelected={selectedObject?.id === wall.id}
-          onSelect={() => onObjectSelect(wall)}
-        />
-      ))}
+      
+{/* Walls */}
+      <group>
+        {(room?.walls || []).map((wall) => (
+          <WallComponent
+            key={wall.id}
+            wall={wall}
+            isSelected={selectedObject?.id === wall.id}
+            onSelect={() => onObjectSelect(wall)}
+          />
+        ))}
+      </group>
 
       {/* Furniture */}
-      {room.furniture.map((furniture) => (
+      {(room?.furniture || []).map((furniture) => (
         <FurnitureComponent
           key={furniture.id}
           furniture={furniture}
@@ -41,51 +49,68 @@ const Room = ({ room, selectedObject, onObjectSelect }) => {
         />
       ))}
 
-      {/* Room Boundaries */}
+{/* Room Boundaries */}
       <group>
         {/* Front Wall */}
-        <Plane
-          args={[width, height]}
-          position={[0, height / 2, -length / 2]}
-          rotation={[0, 0, 0]}
-        >
-          <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
-        </Plane>
-
+        {width > 0 && height > 0 && (
+          <Plane
+            args={[width, height]}
+            position={[0, height / 2, -length / 2]}
+            rotation={[0, 0, 0]}
+          >
+            <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
+          </Plane>
+        )}
+        
         {/* Back Wall */}
-        <Plane
-          args={[width, height]}
-          position={[0, height / 2, length / 2]}
-          rotation={[0, Math.PI, 0]}
-        >
-          <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
-        </Plane>
-
+        {width > 0 && height > 0 && (
+          <Plane
+            args={[width, height]}
+            position={[0, height / 2, length / 2]}
+            rotation={[0, Math.PI, 0]}
+          >
+            <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
+          </Plane>
+        )}
+        
         {/* Left Wall */}
-        <Plane
-          args={[length, height]}
-          position={[-width / 2, height / 2, 0]}
-          rotation={[0, Math.PI / 2, 0]}
-        >
-          <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
-        </Plane>
-
+        {length > 0 && height > 0 && (
+          <Plane
+            args={[length, height]}
+            position={[-width / 2, height / 2, 0]}
+            rotation={[0, Math.PI / 2, 0]}
+          >
+            <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
+          </Plane>
+        )}
+        
         {/* Right Wall */}
-        <Plane
-          args={[length, height]}
-          position={[width / 2, height / 2, 0]}
-          rotation={[0, -Math.PI / 2, 0]}
-        >
-          <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
-        </Plane>
+        {length > 0 && height > 0 && (
+          <Plane
+            args={[length, height]}
+            position={[width / 2, height / 2, 0]}
+            rotation={[0, -Math.PI / 2, 0]}
+          >
+            <meshStandardMaterial color="#e2e8f0" transparent opacity={0.3} />
+          </Plane>
+        )}
       </group>
     </group>
   );
 };
 
 // Wall Component
-const WallComponent = ({ wall, isSelected, onSelect }) => {
+function WallComponent({ wall, isSelected, onSelect }) {
   const meshRef = useRef();
+  
+  // Defensive checks for wall data
+  if (!wall || !wall.dimensions || !wall.position) {
+    console.warn('Invalid wall data:', wall);
+    return null;
+  }
+  
+  const { width = 1, height = 1 } = wall.dimensions;
+  const { x = 0, z = 0 } = wall.position;
   
   useFrame(() => {
     if (meshRef.current && isSelected) {
@@ -94,13 +119,13 @@ const WallComponent = ({ wall, isSelected, onSelect }) => {
       meshRef.current.material.emissive.setHex(0x000000);
     }
   });
-
+  
   return (
     <Box
       ref={meshRef}
-      args={[wall.dimensions.width, wall.dimensions.height, 0.1]}
-      position={[wall.position.x, wall.dimensions.height / 2, wall.position.z]}
-      rotation={[0, wall.rotation, 0]}
+      args={[width, height, 0.1]}
+      position={[x, height / 2, z]}
+      rotation={[0, wall.rotation || 0, 0]}
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
@@ -109,21 +134,23 @@ const WallComponent = ({ wall, isSelected, onSelect }) => {
       <meshStandardMaterial color={wall.color || '#ffffff'} />
     </Box>
   );
-};
-
+}
 // Furniture Component
-const FurnitureComponent = ({ furniture, isSelected, onSelect }) => {
+function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
   
-  useFrame(() => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.material.emissive.setHex(0x10b981);
-    } else if (meshRef.current) {
-      meshRef.current.material.emissive.setHex(0x000000);
-    }
-  });
-
+  // Defensive checks for furniture data
+  if (!furniture || !furniture.position) {
+    console.warn('Invalid furniture data:', furniture);
+    return null;
+  }
+  
   const getFurnitureGeometry = () => {
+    if (furniture.dimensions) {
+      const { width = 1, height = 1, depth = 1 } = furniture.dimensions;
+      return [width, height, depth];
+    }
+    
     switch (furniture.type) {
       case 'sofa':
         return [2, 0.8, 1];
@@ -141,8 +168,12 @@ const FurnitureComponent = ({ furniture, isSelected, onSelect }) => {
         return [1, 1, 1];
     }
   };
-
+  
   const getFurnitureColor = () => {
+    if (furniture.color) {
+      return furniture.color;
+    }
+    
     switch (furniture.type) {
       case 'sofa':
         return '#8b5cf6';
@@ -157,16 +188,23 @@ const FurnitureComponent = ({ furniture, isSelected, onSelect }) => {
       case 'wardrobe':
         return '#ef4444';
       default:
-        return furniture.color || '#6b7280';
+        return '#8B4513';
     }
   };
-
+  
+  const { x = 0, z = 0 } = furniture.position;
+  const rotation = furniture.rotation || 0;
+  
+  useFrame(() => {
+    if (meshRef.current && isSelected) {
+      meshRef.current.material.emissive.setHex(0x10b981);
+    } else if (meshRef.current) {
+      meshRef.current.material.emissive.setHex(0x000000);
+    }
+  });
+  
   return (
-    <group
-      position={[furniture.position.x, furniture.position.y, furniture.position.z]}
-      rotation={[furniture.rotation.x, furniture.rotation.y, furniture.rotation.z]}
-      scale={[furniture.scale.x, furniture.scale.y, furniture.scale.z]}
-    >
+    <group position={[x, 0, z]} rotation={[0, rotation, 0]}>
       <Box
         ref={meshRef}
         args={getFurnitureGeometry()}
@@ -178,41 +216,30 @@ const FurnitureComponent = ({ furniture, isSelected, onSelect }) => {
       >
         <meshStandardMaterial color={getFurnitureColor()} />
       </Box>
-      
-      {/* Furniture Label */}
-      <Text
-        position={[0, getFurnitureGeometry()[1] + 0.5, 0]}
-        fontSize={0.2}
-        color="#374151"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {furniture.type}
-      </Text>
     </group>
   );
-};
-
+}
 // Scene Setup
-const Scene = ({ room, selectedObject, onObjectSelect }) => {
-  const { scene } = useThree();
+// Scene component that contains all 3D elements
+function Scene({ room, selectedObject, onObjectSelect }) {
+  const controlsRef = useRef()
+  const { camera } = useThree()
   
   useEffect(() => {
-    scene.background = new THREE.Color(0xf8fafc);
-  }, [scene]);
-
+    if (camera) {
+      camera.position.set(15, 10, 15)
+      camera.lookAt(0, 0, 0)
+    }
+  }, [camera])
+  
   return (
     <>
+      {/* Lighting with error boundaries */}
       <ambientLight intensity={0.6} />
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <pointLight position={[0, 10, 0]} intensity={0.5} />
       
-      <Grid
-        position={[0, -0.01, 0]}
-        args={[20, 20]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="#e2e8f0"
+<Grid
         sectionSize={5}
         sectionThickness={1}
         sectionColor="#cbd5e1"
@@ -350,16 +377,19 @@ const ThreeViewport = ({
       )}
 
       {/* Room Dimensions Display */}
-      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-lg px-4 py-2 shadow-lg">
-        <div className="text-sm text-gray-600">
-          <div className="font-medium text-gray-800 mb-1">Room Dimensions</div>
-          <div className="space-y-1">
-            <div>Width: {room.dimensions.width}m</div>
-            <div>Length: {room.dimensions.length}m</div>
-            <div>Height: {room.dimensions.height}m</div>
+{/* Room Dimensions Display */}
+      {room?.dimensions && (
+        <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-lg px-4 py-2 shadow-lg">
+          <div className="text-sm text-gray-600">
+            <div className="font-medium text-gray-800 mb-1">Room Dimensions</div>
+            <div className="space-y-1">
+              <div>Width: {room.dimensions.width}m</div>
+              <div>Length: {room.dimensions.length}m</div>
+              <div>Height: {room.dimensions.height}m</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Loading Overlay */}
       {isDragging && (
