@@ -213,10 +213,26 @@ canvas {
 /* Sidebar styles */
 .sidebar {
   @apply bg-white/95 backdrop-blur-md border-r border-gray-200/50;
+  width: 280px;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    width: 320px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    width: 100vw;
+    max-width: 320px;
+  }
 }
 
 .sidebar-mobile {
-  @apply fixed inset-y-0 left-0 z-50 w-80 bg-white/95 backdrop-blur-md border-r border-gray-200/50 transform transition-transform duration-300 ease-in-out;
+  @apply fixed inset-y-0 left-0 z-50 bg-white/95 backdrop-blur-md border-r border-gray-200/50 transform transition-transform duration-300 ease-in-out;
+  width: 100vw;
+  max-width: 320px;
 }
 
 .sidebar-mobile.closed {
@@ -225,6 +241,23 @@ canvas {
 
 .sidebar-mobile.open {
   transform: translateX(0);
+}
+
+/* Drag handle styles */
+.drag-handle {
+  @apply flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-600 cursor-grab transition-colors;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.structure-item {
+  @apply relative flex items-center space-x-2 p-2 rounded-lg border border-gray-200/50 bg-white hover:bg-gray-50 transition-all duration-200;
+}
+
+.structure-item:hover .drag-handle {
+  @apply text-gray-600;
 }
 
 /* Panel styles */

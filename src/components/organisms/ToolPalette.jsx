@@ -23,10 +23,10 @@ const ToolPalette = ({ selectedTool, onToolSelect, onAddObject, room, onRoomResi
       title: 'Structure',
       icon: 'Home',
       items: [
-        { id: 'wall', icon: 'Square', label: 'Wall' },
-        { id: 'door', icon: 'DoorOpen', label: 'Door' },
-        { id: 'window', icon: 'RectangleHorizontal', label: 'Window' },
-        { id: 'ceiling', icon: 'Layers', label: 'Ceiling' },
+        { id: 'wall', icon: 'Square', label: 'Wall', dragHandle: true },
+        { id: 'door', icon: 'DoorOpen', label: 'Door', dragHandle: true },
+        { id: 'window', icon: 'RectangleHorizontal', label: 'Window', dragHandle: true },
+        { id: 'ceiling', icon: 'Layers', label: 'Ceiling', dragHandle: true },
       ]
     },
     {
@@ -103,12 +103,12 @@ const handleAddStructure = (structureType) => {
     onRoomResize(newDimensions);
   };
 
-  return (
+return (
     <div className="h-full flex flex-col bg-white/95 backdrop-blur-md">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200/50">
-        <h2 className="text-lg font-bold text-gray-800">Design Tools</h2>
-        <p className="text-sm text-gray-600">Create and customize your room</p>
+      <div className="p-3 lg:p-4 border-b border-gray-200/50">
+        <h2 className="text-base lg:text-lg font-bold text-gray-800">Design Tools</h2>
+        <p className="text-xs lg:text-sm text-gray-600">Create and customize your room</p>
       </div>
 
       {/* Section Tabs */}
@@ -117,14 +117,14 @@ const handleAddStructure = (structureType) => {
           <button
             key={section.id}
             onClick={() => setActiveSection(section.id)}
-            className={`flex-1 flex items-center justify-center space-x-2 px-3 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 lg:py-3 text-xs lg:text-sm font-medium transition-colors ${
               activeSection === section.id
                 ? 'text-primary border-b-2 border-primary bg-primary/5'
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
             }`}
           >
-            <ApperIcon name={section.icon} size={16} />
-            <span className="hidden sm:inline">{section.title}</span>
+            <ApperIcon name={section.icon} size={14} className="lg:w-4 lg:h-4" />
+            <span className="hidden xs:inline text-xs lg:text-sm">{section.title}</span>
           </button>
         ))}
       </div>
@@ -163,39 +163,62 @@ const handleAddStructure = (structureType) => {
           </div>
         </div>
 
-        {/* Tool Grid */}
+{/* Tool Grid */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
             <ApperIcon name={toolSections.find(s => s.id === activeSection)?.icon} size={16} />
             <span>{toolSections.find(s => s.id === activeSection)?.title}</span>
           </h3>
           
-          <div className="grid grid-cols-3 gap-3">
-            {toolSections.find(s => s.id === activeSection)?.items.map((tool) => (
-              <motion.button
-                key={tool.id}
-                onClick={() => {
-                  if (activeSection === 'tools') {
-                    handleToolClick(tool.id);
-                  } else if (activeSection === 'furniture') {
-                    handleAddFurniture(tool.id);
-                  } else if (activeSection === 'structure') {
-                    handleAddStructure(tool.id);
-                  }
-                }}
-                className={`tool-item ${selectedTool === tool.id ? 'active' : ''} ${
-                  activeSection === 'tools' && selectedTool === tool.id
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-white hover:bg-gray-50 text-gray-700'
-                } border border-gray-200/50`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                title={tool.label}
-              >
-                <ApperIcon name={tool.icon} size={20} />
-              </motion.button>
-            ))}
-          </div>
+          {activeSection === 'structure' ? (
+            <div className="space-y-2">
+              {toolSections.find(s => s.id === activeSection)?.items.map((tool) => (
+                <motion.div
+                  key={tool.id}
+                  className="structure-item"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="drag-handle">
+                    <ApperIcon name="GripVertical" size={16} />
+                  </div>
+                  <motion.button
+                    onClick={() => handleAddStructure(tool.id)}
+                    className="flex-1 flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    title={tool.label}
+                  >
+                    <ApperIcon name={tool.icon} size={18} className="text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">{tool.label}</span>
+                  </motion.button>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+              {toolSections.find(s => s.id === activeSection)?.items.map((tool) => (
+                <motion.button
+                  key={tool.id}
+                  onClick={() => {
+                    if (activeSection === 'tools') {
+                      handleToolClick(tool.id);
+                    } else if (activeSection === 'furniture') {
+                      handleAddFurniture(tool.id);
+                    }
+                  }}
+                  className={`tool-item ${selectedTool === tool.id ? 'active' : ''} ${
+                    activeSection === 'tools' && selectedTool === tool.id
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'bg-white hover:bg-gray-50 text-gray-700'
+                  } border border-gray-200/50 h-12 lg:h-14`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title={tool.label}
+                >
+                  <ApperIcon name={tool.icon} size={18} className="lg:w-5 lg:h-5" />
+                </motion.button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Color Picker */}
