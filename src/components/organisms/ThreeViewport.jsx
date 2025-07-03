@@ -103,16 +103,19 @@ function Room({ room, selectedObject, onObjectSelect }) {
 function WallComponent({ wall, isSelected, onSelect }) {
   const meshRef = useRef();
   
-  // Move useFrame hook before any early returns
+  // useFrame must be called unconditionally - move all checks inside
   useFrame(() => {
-    if (meshRef.current && isSelected && wall && wall.dimensions && wall.position) {
-      meshRef.current.material.emissive.setHex(0x2563eb);
-    } else if (meshRef.current) {
-      meshRef.current.material.emissive.setHex(0x000000);
+    // Only update material if we have valid wall data and mesh reference
+    if (meshRef.current && wall && wall.dimensions && wall.position) {
+      if (isSelected) {
+        meshRef.current.material.emissive.setHex(0x2563eb);
+      } else {
+        meshRef.current.material.emissive.setHex(0x000000);
+      }
     }
   });
   
-  // Defensive checks for wall data
+  // Defensive checks for wall data - after hooks
   if (!wall || !wall.dimensions || !wall.position) {
     console.warn('Invalid wall data:', wall);
     return null;
@@ -146,16 +149,19 @@ function WallComponent({ wall, isSelected, onSelect }) {
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
   
-  // Move useFrame hook before any early returns
+  // useFrame must be called unconditionally - move all checks inside
   useFrame(() => {
-    if (meshRef.current && isSelected && furniture && furniture.position) {
-      meshRef.current.material.emissive.setHex(0x10b981);
-    } else if (meshRef.current) {
-      meshRef.current.material.emissive.setHex(0x000000);
+    // Only update material if we have valid furniture data and mesh reference
+    if (meshRef.current && furniture && furniture.position) {
+      if (isSelected) {
+        meshRef.current.material.emissive.setHex(0x10b981);
+      } else {
+        meshRef.current.material.emissive.setHex(0x000000);
+      }
     }
   });
   
-  // Defensive checks for furniture data
+  // Defensive checks for furniture data - after hooks
   if (!furniture || !furniture.position) {
     console.warn('Invalid furniture data:', furniture);
     return null;
