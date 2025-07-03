@@ -1,4 +1,5 @@
 import React from "react";
+import * as THREE from "three";
 import Error from "@/components/ui/Error";
 // Generate unique ID
 export const generateId = () => {
@@ -132,7 +133,6 @@ export const calculateDistance = (point1, point2) => {
   const dz = point1.z - point2.z;
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
-
 // Snap to grid
 export const snapToGrid = (value, gridSize = 0.5) => {
   return Math.round(value / gridSize) * gridSize;
@@ -147,6 +147,90 @@ export const isWithinRoomBounds = (position, roomDimensions) => {
     x >= -width / 2 && x <= width / 2 &&
     z >= -length / 2 && z <= length / 2
   );
+};
+
+// Snap position to grid
+export const snapPositionToGrid = (position, gridSize = 0.5) => {
+  return {
+    x: snapToGrid(position.x, gridSize),
+    y: position.y, // Y position usually doesn't snap to grid
+    z: snapToGrid(position.z, gridSize)
+  };
+};
+
+// Constrain position within room bounds
+export const constrainToRoomBounds = (position, roomDimensions, objectDimensions = {}) => {
+  const { width, length } = roomDimensions;
+  const objWidth = objectDimensions.width || 1;
+  const objDepth = objectDimensions.depth || 1;
+  
+  // Calculate boundaries accounting for object size
+  const maxX = (width / 2) - (objWidth / 2);
+  const minX = -(width / 2) + (objWidth / 2);
+  const maxZ = (length / 2) - (objDepth / 2);
+  const minZ = -(length / 2) + (objDepth / 2);
+  
+  return {
+    x: Math.max(minX, Math.min(maxX, position.x)),
+    y: position.y,
+    z: Math.max(minZ, Math.min(maxZ, position.z))
+  };
+};
+
+// Process furniture position for dragging
+export const processDragPosition = (position, roomDimensions, objectDimensions, enableSnap = true, gridSize = 0.5) => {
+  let newPosition = { ...position };
+  
+  // First constrain to room bounds
+  newPosition = constrainToRoomBounds(newPosition, roomDimensions, objectDimensions);
+  
+  // Then snap to grid if enabled
+  if (enableSnap) {
+    newPosition = snapPositionToGrid(newPosition, gridSize);
+  }
+  
+  return newPosition;
+};
+
+// Convert screen coordinates to world coordinates for Three.js
+export const screenToWorld = (screenX, screenY, camera, domElement) => {
+  if (!camera || !domElement) {
+    console.error('Camera and domElement are required for screenToWorld conversion');
+    return { x: 0, y: 0, z: 0 };
+  }
+  
+  const mouse = {
+    x: (screenX / domElement.clientWidth) * 2 - 1,
+    y: -(screenY / domElement.clientHeight) * 2 + 1
+  };
+  
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, camera);
+  
+  // Intersect with ground plane (y = 0)
+  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const intersection = new THREE.Vector3();
+  raycaster.ray.intersectPlane(groundPlane, intersection);
+  
+  return intersection;
+};
+
+// Calculate offset for drag operations
+export const calculateDragOffset = (clickPosition, objectPosition) => {
+  return {
+    x: clickPosition.x - objectPosition.x,
+    y: clickPosition.y - objectPosition.y,
+    z: clickPosition.z - objectPosition.z
+  };
+};
+
+// Apply drag offset to maintain relative position
+export const applyDragOffset = (worldPosition, dragOffset) => {
+  return {
+    x: worldPosition.x - dragOffset.x,
+    y: worldPosition.y - dragOffset.y,
+    z: worldPosition.z - dragOffset.z
+  };
 };
 
 // Get furniture default properties
@@ -220,11 +304,11 @@ export const getFurnitureColor = (furniture) => {
     case 'desk':
       return 0xef4444;
     case 'wardrobe':
+case 'wardrobe':
       return 0x6b7280;
-default:
+    default:
       return 0x9ca3af;
   }
-};
 
 // Export room to JSON
 export const exportRoomToJSON = (room) => {

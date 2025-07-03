@@ -76,12 +76,13 @@ const DesignStudio = () => {
     setSelectedTool('select');
   };
 
-  // Handle object updates
+// Handle object updates
   const handleObjectUpdate = (objectId, updates) => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
       
-      if (updates.type === 'furniture') {
+      // Handle furniture updates (including position changes from dragging)
+      if (updates.type === 'furniture' || updates.position) {
         newRoom.furniture = newRoom.furniture.map(item => 
           item.id === objectId ? { ...item, ...updates } : item
         );
@@ -89,6 +90,17 @@ const DesignStudio = () => {
         newRoom.walls = newRoom.walls.map(wall => 
           wall.id === objectId ? { ...wall, ...updates } : wall
         );
+      } else {
+        // Handle generic object updates (like position-only updates)
+        const furnitureIndex = newRoom.furniture.findIndex(item => item.id === objectId);
+        if (furnitureIndex >= 0) {
+          newRoom.furniture[furnitureIndex] = { ...newRoom.furniture[furnitureIndex], ...updates };
+        } else {
+          const wallIndex = newRoom.walls.findIndex(wall => wall.id === objectId);
+          if (wallIndex >= 0) {
+            newRoom.walls[wallIndex] = { ...newRoom.walls[wallIndex], ...updates };
+          }
+        }
       }
       
       newRoom.lastModified = new Date();

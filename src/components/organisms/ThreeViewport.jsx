@@ -3,15 +3,17 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
 import { motion } from "framer-motion";
 import * as THREE from "three";
-import { getFurnitureColor } from "@/utils/helpers";
+import { applyDragOffset, calculateDragOffset, getFurnitureColor, processDragPosition, screenToWorld } from "@/utils/helpers";
 import ApperIcon from "@/components/ApperIcon";
 // Room component that renders the 3D room structure
-function Room({ room, selectedObject, onObjectSelect }) {
+function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool }) {
   const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
   
   // Defensive checks for valid dimensions
   if (!width || !length || !height || width <= 0 || length <= 0 || height <= 0) {
     console.warn('Invalid room dimensions:', { width, length, height })
+    return null
+  }
     return null
   }
   
@@ -39,16 +41,18 @@ function Room({ room, selectedObject, onObjectSelect }) {
         ))}
       </group>
 
-      {/* Furniture */}
+{/* Furniture */}
       {(room?.furniture || []).map((furniture) => (
         <FurnitureComponent
           key={furniture.id}
           furniture={furniture}
           isSelected={selectedObject?.id === furniture.id}
           onSelect={() => onObjectSelect(furniture)}
+          onDrag={onObjectUpdate}
+          isDragMode={selectedTool === 'select' || selectedTool === 'move'}
+          roomDimensions={room?.dimensions}
         />
       ))}
-
 {/* Room Boundaries */}
       <group>
         {/* Front Wall */}
@@ -168,8 +172,12 @@ function WallComponent({ wall, isSelected, onSelect }) {
 }
 
 // Furniture Component with enhanced validation and error handling
-function FurnitureComponent({ furniture, isSelected, onSelect }) {
+function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMode, roomDimensions }) {
   const meshRef = useRef();
+  const groupRef = useRef();
+  const { camera, gl } = useThree();
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, z: 0 });
 
   // useEffect must be called before any early returns to maintain hook order
 useEffect(() => {
@@ -177,16 +185,15 @@ useEffect(() => {
     if (!furniture || typeof furniture !== 'object' || !meshRef.current) return;
     
     try {
-      if (isSelected) {
-        meshRef.current.material.color.setHex(0x10b981);
+      if (isSelected || isDragging) {
+        meshRef.current.material.color.setHex(isDragging ? 0xf59e0b : 0x10b981);
       } else {
         meshRef.current.material.color.setHex(getFurnitureColor(furniture));
       }
     } catch (error) {
       console.error('Error updating furniture material:', error);
     }
-  }, [isSelected, furniture]);
-
+  }, [isSelected, furniture, isDragging]);
   // Early return if furniture object is invalid - MUST be after all hooks
   if (!furniture || typeof furniture !== 'object') {
     console.warn('Invalid furniture object provided to FurnitureComponent');
@@ -252,25 +259,152 @@ useEffect(() => {
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
   
+// Drag event handlers
+  const handlePointerDown = (e) => {
+    if (!isDragMode) {
+      e.stopPropagation();
+      onSelect?.(furniture);
+      return;
+    }
+
+    e.stopPropagation();
+    setIsDragging(true);
+    
+    // Calculate world position from screen coordinates
+    const rect = gl.domElement.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    
+    try {
+      const worldPos = screenToWorld(screenX, screenY, camera, gl.domElement);
+      const currentPos = { 
+        x: validatedPosition[0], 
+        y: validatedPosition[1], 
+        z: validatedPosition[2] 
+      };
+      
+      const offset = calculateDragOffset(worldPos, currentPos);
+      setDragOffset(offset);
+      
+      // Disable orbit controls during drag
+      if (gl.domElement) {
+        gl.domElement.style.cursor = 'grabbing';
+      }
+    } catch (error) {
+      console.error('Error starting drag:', error);
+      setIsDragging(false);
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging || !isDragMode) return;
+
+    e.stopPropagation();
+    
+    const rect = gl.domElement.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    
+    try {
+      const worldPos = screenToWorld(screenX, screenY, camera, gl.domElement);
+      const newPos = applyDragOffset(worldPos, dragOffset);
+      
+      // Get furniture dimensions for boundary checking
+      const furnitureDimensions = {
+        width: geometry[0],
+        depth: geometry[2]
+      };
+      
+      // Process position with constraints and snapping
+      const processedPos = processDragPosition(
+        newPos, 
+        roomDimensions || { width: 10, length: 10 }, 
+        furnitureDimensions,
+        true, // enable snapping
+        0.5   // grid size
+      );
+      
+      // Update furniture position in real-time
+      if (onDrag) {
+        onDrag(furniture.id, {
+          position: processedPos
+        });
+      }
+    } catch (error) {
+      console.error('Error during drag move:', error);
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDragging) return;
+    
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    // Re-enable orbit controls
+    if (gl.domElement) {
+      gl.domElement.style.cursor = 'default';
+    }
+  };
+
+  // Add global event listeners for drag operations
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMove = (e) => handlePointerMove(e);
+      const handleGlobalUp = (e) => handlePointerUp(e);
+      
+      document.addEventListener('pointermove', handleGlobalMove);
+      document.addEventListener('pointerup', handleGlobalUp);
+      
+      return () => {
+        document.removeEventListener('pointermove', handleGlobalMove);
+        document.removeEventListener('pointerup', handleGlobalUp);
+      };
+    }
+  }, [isDragging, dragOffset, geometry, roomDimensions]);
+
   return (
-    <group position={validatedPosition} rotation={validatedRotation}>
+    <group 
+      ref={groupRef}
+      position={validatedPosition} 
+      rotation={validatedRotation}
+    >
       <Box
         ref={meshRef}
         args={geometry}
         position={[0, geometry[1] / 2, 0]}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect?.(furniture);
-}}
+        onPointerDown={handlePointerDown}
+        onPointerEnter={() => {
+          if (isDragMode && gl.domElement) {
+            gl.domElement.style.cursor = 'grab';
+          }
+        }}
+        onPointerLeave={() => {
+          if (!isDragging && gl.domElement) {
+            gl.domElement.style.cursor = 'default';
+          }
+        }}
       >
-        <meshStandardMaterial color={getFurnitureColor(furniture)} />
+        <meshStandardMaterial 
+          color={getFurnitureColor(furniture)} 
+          transparent
+          opacity={isDragging ? 0.8 : 1.0}
+        />
       </Box>
+      
+      {/* Visual indicator when dragging */}
+      {isDragging && (
+        <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[Math.max(geometry[0], geometry[2]) * 0.6, Math.max(geometry[0], geometry[2]) * 0.8, 32]} />
+          <meshBasicMaterial color={0x10b981} transparent opacity={0.3} />
+        </mesh>
+      )}
     </group>
-  );
+);
 }
 // Scene Setup
 // Scene component that contains all 3D elements
-function Scene({ room, selectedObject, onObjectSelect }) {
+function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool }) {
   const controlsRef = useRef()
   const { camera } = useThree()
   
@@ -292,18 +426,20 @@ function Scene({ room, selectedObject, onObjectSelect }) {
         sectionSize={5}
         sectionThickness={1}
         sectionColor="#cbd5e1"
-      />
+/>
       
       <Room
         room={room}
         selectedObject={selectedObject}
         onObjectSelect={onObjectSelect}
+        onObjectUpdate={onObjectUpdate}
+        selectedTool={selectedTool}
       />
     </>
   );
 };
 
-// Main Viewport Component
+// Main Viewport Component  
 const ThreeViewport = ({
   room,
   selectedTool,
@@ -363,15 +499,16 @@ const ThreeViewport = ({
           enableRotate={true}
           onStart={() => setIsDragging(true)}
           onEnd={() => setIsDragging(false)}
-        />
+/>
         
         <Scene
           room={room}
           selectedObject={selectedObject}
           onObjectSelect={onObjectSelect}
+          onObjectUpdate={onObjectUpdate}
+          selectedTool={selectedTool}
         />
       </Canvas>
-
       {/* Viewport Controls */}
       <div className="absolute bottom-4 left-4 flex space-x-2">
         {[
