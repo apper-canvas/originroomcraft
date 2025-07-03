@@ -101,7 +101,16 @@ function Room({ room, selectedObject, onObjectSelect }) {
 
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
-  const meshRef = useRef();
+const meshRef = useRef();
+  
+  // Move useFrame hook before any early returns
+  useFrame(() => {
+    if (meshRef.current && isSelected && wall && wall.dimensions && wall.position) {
+      meshRef.current.material.emissive.setHex(0x2563eb);
+    } else if (meshRef.current) {
+      meshRef.current.material.emissive.setHex(0x000000);
+    }
+  });
   
   // Defensive checks for wall data
   if (!wall || !wall.dimensions || !wall.position) {
@@ -111,14 +120,6 @@ function WallComponent({ wall, isSelected, onSelect }) {
   
   const { width = 1, height = 1 } = wall.dimensions;
   const { x = 0, z = 0 } = wall.position;
-  
-  useFrame(() => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.material.emissive.setHex(0x2563eb);
-    } else if (meshRef.current) {
-      meshRef.current.material.emissive.setHex(0x000000);
-    }
-  });
   
   return (
     <Box
@@ -137,7 +138,16 @@ function WallComponent({ wall, isSelected, onSelect }) {
 }
 // Furniture Component
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
-  const meshRef = useRef();
+const meshRef = useRef();
+  
+  // Move useFrame hook before any early returns
+  useFrame(() => {
+    if (meshRef.current && isSelected && furniture && furniture.position) {
+      meshRef.current.material.emissive.setHex(0x10b981);
+    } else if (meshRef.current) {
+      meshRef.current.material.emissive.setHex(0x000000);
+    }
+  });
   
   // Defensive checks for furniture data
   if (!furniture || !furniture.position) {
@@ -194,14 +204,6 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
   
   const { x = 0, z = 0 } = furniture.position;
   const rotation = furniture.rotation || 0;
-  
-  useFrame(() => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.material.emissive.setHex(0x10b981);
-    } else if (meshRef.current) {
-      meshRef.current.material.emissive.setHex(0x000000);
-    }
-  });
   
   return (
     <group position={[x, 0, z]} rotation={[0, rotation, 0]}>
