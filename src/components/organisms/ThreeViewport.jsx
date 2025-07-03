@@ -104,18 +104,21 @@ function Room({ room, selectedObject, onObjectSelect }) {
 function WallComponent({ wall, isSelected, onSelect }) {
   const meshRef = useRef();
 
+  useEffect(() => {
+    // Skip effect if wall is invalid
+    if (!wall || !meshRef.current) return;
+    
+    if (isSelected) {
+      meshRef.current.material.color.setHex(0x3b82f6);
+    } else {
+      meshRef.current.material.color.setHex(0x6b7280);
+    }
+  }, [isSelected, wall]);
+
   // Early return if wall object is invalid
   if (!wall) {
     return null;
   }
-
-  useEffect(() => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.material.color.setHex(0x3b82f6);
-    } else if (meshRef.current) {
-      meshRef.current.material.color.setHex(0x6b7280);
-    }
-  }, [isSelected]);
 
   // Safe property access with fallback values
   const { width = 1, height = 1 } = wall.dimensions || {};
@@ -147,18 +150,21 @@ function WallComponent({ wall, isSelected, onSelect }) {
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
 
+  useEffect(() => {
+    // Skip effect if furniture is invalid
+    if (!furniture || !meshRef.current) return;
+    
+    if (isSelected) {
+      meshRef.current.material.color.setHex(0x10b981);
+    } else {
+      meshRef.current.material.color.setHex(getFurnitureColor());
+    }
+  }, [isSelected, furniture]);
+
   // Early return if furniture object is invalid
   if (!furniture) {
     return null;
   }
-
-  useEffect(() => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.material.color.setHex(0x10b981);
-    } else if (meshRef.current) {
-      meshRef.current.material.color.setHex(getFurnitureColor());
-    }
-  }, [isSelected]);
 
   // Safe property access with fallback values
   const { x = 0, y = 0, z = 0 } = furniture.position || {};
