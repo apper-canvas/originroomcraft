@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Box, Grid, OrbitControls, Plane, Text } from "@react-three/drei";
 import { motion } from "framer-motion";
 import * as THREE from "three";
+import { getFurnitureColor } from "@/utils/helpers";
 import ApperIcon from "@/components/ApperIcon";
 // Room component that renders the 3D room structure
 function Room({ room, selectedObject, onObjectSelect }) {
@@ -171,7 +172,7 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
 
   // useEffect must be called before any early returns to maintain hook order
-  useEffect(() => {
+useEffect(() => {
     // Skip effect if furniture is invalid or mesh not ready
     if (!furniture || typeof furniture !== 'object' || !meshRef.current) return;
     
@@ -179,34 +180,7 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
       if (isSelected) {
         meshRef.current.material.color.setHex(0x10b981);
       } else {
-        // Define getFurnitureColor inside effect to access furniture safely
-        const getFurnitureColor = () => {
-          if (furniture.color) {
-            // Validate color value
-            const color = Number(furniture.color);
-            return !isNaN(color) ? color : 0x9ca3af;
-          }
-          
-          // Safe type checking with fallback for color selection
-          const furnitureType = furniture.type || 'default';
-          switch (furnitureType) {
-            case 'sofa':
-              return 0x8b5cf6;
-            case 'bed':
-              return 0x3b82f6;
-            case 'table':
-              return 0x10b981;
-            case 'chair':
-              return 0xf59e0b;
-            case 'desk':
-              return 0xef4444;
-            case 'wardrobe':
-              return 0x6b7280;
-            default:
-              return 0x9ca3af;
-          }
-        };
-        meshRef.current.material.color.setHex(getFurnitureColor());
+        meshRef.current.material.color.setHex(getFurnitureColor(furniture));
       }
     } catch (error) {
       console.error('Error updating furniture material:', error);
@@ -287,9 +261,9 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
         onClick={(e) => {
           e.stopPropagation();
           onSelect?.(furniture);
-        }}
+}}
       >
-        <meshStandardMaterial color={getFurnitureColor()} />
+        <meshStandardMaterial color={getFurnitureColor(furniture)} />
       </Box>
     </group>
   );

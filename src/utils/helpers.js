@@ -1,3 +1,5 @@
+import React from "react";
+import Error from "@/components/ui/Error";
 // Generate unique ID
 export const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -184,6 +186,44 @@ export const getFurnitureDefaults = (type) => {
   
   return defaults[type] || defaults.table;
 };
+
+// Get furniture color based on type or custom color
+export const getFurnitureColor = (furniture) => {
+  if (!furniture || typeof furniture !== 'object') {
+    return 0x9ca3af; // Default gray color
+  }
+  
+  if (furniture.color) {
+    // Handle hex string colors
+    if (typeof furniture.color === 'string') {
+      const hexColor = furniture.color.replace('#', '');
+      const color = parseInt(hexColor, 16);
+      return !isNaN(color) ? color : 0x9ca3af;
+    }
+    
+    // Handle numeric colors
+    const color = Number(furniture.color);
+    return !isNaN(color) ? color : 0x9ca3af;
+  }
+  
+  // Safe type checking with fallback for color selection
+  const furnitureType = furniture.type || 'default';
+  switch (furnitureType) {
+    case 'sofa':
+      return 0x8b5cf6;
+    case 'bed':
+      return 0x3b82f6;
+    case 'table':
+      return 0x10b981;
+    case 'chair':
+      return 0xf59e0b;
+    case 'desk':
+      return 0xef4444;
+    case 'wardrobe':
+      return 0x6b7280;
+    default:
+      return 0x9ca3af;
+  }
 
 // Export room to JSON
 export const exportRoomToJSON = (room) => {
