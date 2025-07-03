@@ -64,10 +64,13 @@ const DesignStudio = () => {
     initializeEngine();
   }, []);
 
-  // Handle tool selection
+// Handle tool selection
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
-    setSelectedObject(null);
+    // Only clear selection if not switching to move tool
+    if (tool !== 'move') {
+      setSelectedObject(null);
+    }
   };
 
   // Handle object selection in 3D scene
@@ -108,7 +111,7 @@ const DesignStudio = () => {
     });
   };
 
-  // Handle adding new objects
+// Handle adding new objects
   const handleAddObject = (objectData) => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
@@ -128,9 +131,18 @@ const DesignStudio = () => {
           position: { x: 0, z: 0 },
           rotation: 0,
           dimensions: { width: 5, height: 3 },
-          color: '#ffffff',
-          openings: []
+          color: objectData.color || '#ffffff',
+          openings: objectData.openings || []
         });
+      } else if (objectData.type === 'ceiling') {
+        newRoom.ceiling = {
+          id: generateId(),
+          type: 'ceiling',
+          color: objectData.color || '#f8f9fa',
+          material: objectData.material || 'plaster',
+          texture: objectData.texture || 'smooth',
+          height: objectData.height || newRoom.dimensions.height
+        };
       }
       
       newRoom.lastModified = new Date();

@@ -49,12 +49,13 @@ class RoomService {
   async createRoom(roomData) {
     await this.delay();
     
-    const newRoom = {
+const newRoom = {
       Id: this.getNextId(),
       name: roomData.name || 'New Room',
       dimensions: roomData.dimensions || { width: 10, length: 10, height: 3 },
       walls: roomData.walls || [],
       furniture: roomData.furniture || [],
+      ceiling: roomData.ceiling || null,
       lastModified: new Date().toISOString()
     };
 

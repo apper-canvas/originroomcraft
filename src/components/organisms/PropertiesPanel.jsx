@@ -305,8 +305,217 @@ const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
               </select>
             </div>
           </div>
+)}
+
+        {/* Opening Properties for Walls */}
+        {selectedObject.type === 'wall' && selectedObject.openings && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
+              <ApperIcon name="DoorOpen" size={16} />
+              <span>Openings</span>
+            </h3>
+            
+            <div className="space-y-3">
+              {selectedObject.openings.map((opening, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{opening.type}</span>
+                    <button
+                      onClick={() => {
+                        const newOpenings = selectedObject.openings.filter((_, i) => i !== index);
+                        handlePropertyChange('openings', newOpenings);
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <ApperIcon name="X" size={14} />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="form-group">
+                      <label className="form-label">Width (m)</label>
+                      <input
+                        type="number"
+                        value={opening.dimensions?.width || 1}
+                        onChange={(e) => {
+                          const newOpenings = [...selectedObject.openings];
+                          newOpenings[index] = {
+                            ...opening,
+                            dimensions: {
+                              ...opening.dimensions,
+                              width: Math.max(0.3, parseFloat(e.target.value) || 1)
+                            }
+                          };
+                          handlePropertyChange('openings', newOpenings);
+                        }}
+                        step="0.1"
+                        min="0.3"
+                        max="5"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Height (m)</label>
+                      <input
+                        type="number"
+                        value={opening.dimensions?.height || 1}
+                        onChange={(e) => {
+                          const newOpenings = [...selectedObject.openings];
+                          newOpenings[index] = {
+                            ...opening,
+                            dimensions: {
+                              ...opening.dimensions,
+                              height: Math.max(0.3, parseFloat(e.target.value) || 1)
+                            }
+                          };
+                          handlePropertyChange('openings', newOpenings);
+                        }}
+                        step="0.1"
+                        min="0.3"
+                        max="3"
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="form-group">
+                      <label className="form-label">X Position</label>
+                      <input
+                        type="number"
+                        value={opening.position?.x || 0}
+                        onChange={(e) => {
+                          const newOpenings = [...selectedObject.openings];
+                          newOpenings[index] = {
+                            ...opening,
+                            position: {
+                              ...opening.position,
+                              x: parseFloat(e.target.value) || 0
+                            }
+                          };
+                          handlePropertyChange('openings', newOpenings);
+                        }}
+                        step="0.1"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Y Position</label>
+                      <input
+                        type="number"
+                        value={opening.position?.y || 0}
+                        onChange={(e) => {
+                          const newOpenings = [...selectedObject.openings];
+                          newOpenings[index] = {
+                            ...opening,
+                            position: {
+                              ...opening.position,
+                              y: parseFloat(e.target.value) || 0
+                            }
+                          };
+                          handlePropertyChange('openings', newOpenings);
+                        }}
+                        step="0.1"
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="flex space-x-2">
+                <motion.button
+                  onClick={() => {
+                    const newOpening = {
+                      type: 'door',
+                      position: { x: 0, y: 0 },
+                      dimensions: { width: 0.8, height: 2.0 }
+                    };
+                    handlePropertyChange('openings', [...(selectedObject.openings || []), newOpening]);
+                  }}
+                  className="flex-1 btn-ghost text-sm flex items-center justify-center space-x-1"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <ApperIcon name="DoorOpen" size={14} />
+                  <span>Add Door</span>
+                </motion.button>
+                <motion.button
+                  onClick={() => {
+                    const newOpening = {
+                      type: 'window',
+                      position: { x: 0, y: 1 },
+                      dimensions: { width: 1.2, height: 1.0 }
+                    };
+                    handlePropertyChange('openings', [...(selectedObject.openings || []), newOpening]);
+                  }}
+                  className="flex-1 btn-ghost text-sm flex items-center justify-center space-x-1"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <ApperIcon name="RectangleHorizontal" size={14} />
+                  <span>Add Window</span>
+                </motion.button>
+              </div>
+            </div>
+          </div>
         )}
 
+        {/* Ceiling Properties */}
+        {selectedObject.type === 'ceiling' && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
+              <ApperIcon name="Layers" size={16} />
+              <span>Ceiling Properties</span>
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="form-group">
+                <label className="form-label">Height (m)</label>
+                <input
+                  type="number"
+                  value={properties.height || 3}
+                  onChange={(e) => handlePropertyChange('height', Math.max(2, parseFloat(e.target.value) || 3))}
+                  step="0.1"
+                  min="2"
+                  max="10"
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Material Type</label>
+                <select
+                  value={properties.material || 'plaster'}
+                  onChange={(e) => handlePropertyChange('material', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="plaster">Plaster</option>
+                  <option value="wood">Wood</option>
+                  <option value="concrete">Concrete</option>
+                  <option value="metal">Metal</option>
+                  <option value="drywall">Drywall</option>
+                  <option value="tile">Tile</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Texture</label>
+                <select
+                  value={properties.texture || 'smooth'}
+                  onChange={(e) => handlePropertyChange('texture', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="smooth">Smooth</option>
+                  <option value="textured">Textured</option>
+                  <option value="popcorn">Popcorn</option>
+                  <option value="coffered">Coffered</option>
+                  <option value="beamed">Beamed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Object Actions */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">

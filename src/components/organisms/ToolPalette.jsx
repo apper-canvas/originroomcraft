@@ -18,7 +18,7 @@ const ToolPalette = ({ selectedTool, onToolSelect, onAddObject, room, onRoomResi
         { id: 'scale', icon: 'Maximize', label: 'Scale' },
       ]
     },
-    {
+{
       id: 'structure',
       title: 'Structure',
       icon: 'Home',
@@ -26,6 +26,7 @@ const ToolPalette = ({ selectedTool, onToolSelect, onAddObject, room, onRoomResi
         { id: 'wall', icon: 'Square', label: 'Wall' },
         { id: 'door', icon: 'DoorOpen', label: 'Door' },
         { id: 'window', icon: 'RectangleHorizontal', label: 'Window' },
+        { id: 'ceiling', icon: 'Layers', label: 'Ceiling' },
       ]
     },
     {
@@ -67,11 +68,33 @@ const ToolPalette = ({ selectedTool, onToolSelect, onAddObject, room, onRoomResi
     });
   };
 
-  const handleAddStructure = (structureType) => {
-    onAddObject({
-      type: structureType,
-      color: '#ffffff'
-    });
+const handleAddStructure = (structureType) => {
+    if (structureType === 'door' || structureType === 'window') {
+      onAddObject({
+        type: 'wall',
+        color: '#ffffff',
+        openings: [{
+          type: structureType,
+          position: { x: 0, y: 0 },
+          dimensions: structureType === 'door' 
+            ? { width: 0.8, height: 2.0 }
+            : { width: 1.2, height: 1.0 }
+        }]
+      });
+    } else if (structureType === 'ceiling') {
+      onAddObject({
+        type: 'ceiling',
+        color: '#f8f9fa',
+        material: 'plaster',
+        height: room.dimensions.height
+      });
+    } else {
+      onAddObject({
+        type: structureType,
+        color: '#ffffff',
+        openings: []
+      });
+    }
   };
 
   const handleRoomDimensionChange = (dimension, value) => {

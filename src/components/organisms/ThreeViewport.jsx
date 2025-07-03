@@ -97,11 +97,62 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
           </Plane>
         )}
       </group>
+{/* Ceiling */}
+      {room?.ceiling && (
+        <CeilingComponent
+          ceiling={room.ceiling}
+          isSelected={selectedObject?.id === room.ceiling.id}
+          onSelect={() => onObjectSelect(room.ceiling)}
+          roomDimensions={room?.dimensions}
+        />
+      )}
     </group>
   );
 };
 
-// Wall Component
+// Ceiling Component
+function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
+  const meshRef = useRef();
+
+  useEffect(() => {
+    if (!ceiling || typeof ceiling !== 'object' || !meshRef.current) return;
+    
+    if (isSelected) {
+      meshRef.current.material.color.setHex(0x3b82f6);
+    } else {
+      const color = ceiling.color ? new THREE.Color(ceiling.color).getHex() : 0xf8f9fa;
+      meshRef.current.material.color.setHex(color);
+    }
+  }, [isSelected, ceiling]);
+
+  if (!ceiling || typeof ceiling !== 'object' || !roomDimensions) {
+    return null;
+  }
+
+  const { width = 10, length = 10 } = roomDimensions;
+  const height = ceiling.height || 3;
+
+  return (
+    <Plane
+      ref={meshRef}
+      args={[width, length]}
+      position={[0, height, 0]}
+      rotation={[Math.PI / 2, 0, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect?.(ceiling);
+      }}
+    >
+      <meshStandardMaterial 
+        color={ceiling.color || '#f8f9fa'} 
+        transparent 
+        opacity={0.9}
+        side={THREE.DoubleSide}
+      />
+    </Plane>
+  );
+}
+
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
   // CRITICAL: All hooks must be called before any conditional returns
@@ -153,19 +204,48 @@ function WallComponent({ wall, isSelected, onSelect }) {
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
 
-  return (
-    <Box
-      ref={meshRef}
-      args={validatedGeometry}
-      position={validatedPosition}
-      rotation={validatedRotation}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect?.(wall);
-      }}
-    >
-      <meshStandardMaterial color={isSelected ? 0x3b82f6 : 0x6b7280} />
-    </Box>
+return (
+    <group>
+      <Box
+        ref={meshRef}
+        args={validatedGeometry}
+        position={validatedPosition}
+        rotation={validatedRotation}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect?.(wall);
+        }}
+      >
+        <meshStandardMaterial color={isSelected ? 0x3b82f6 : 0x6b7280} />
+      </Box>
+      
+      {/* Render openings (doors/windows) */}
+      {wall.openings && wall.openings.map((opening, index) => {
+        const openingWidth = opening.dimensions?.width || 1;
+        const openingHeight = opening.dimensions?.height || 1;
+        const openingX = opening.position?.x || 0;
+        const openingY = opening.position?.y || 0;
+        
+        return (
+          <Box
+            key={index}
+            args={[openingWidth, openingHeight, 0.05]}
+            position={[
+              validatedPosition[0] + openingX,
+              validatedPosition[1] - validatedGeometry[1]/2 + openingY + openingHeight/2,
+              validatedPosition[2] + validatedGeometry[2]/2 + 0.01
+            ]}
+            rotation={validatedRotation}
+          >
+            <meshStandardMaterial 
+              color={opening.type === 'door' ? 0x8b4513 : 0x87ceeb} 
+              transparent 
+              opacity={opening.type === 'window' ? 0.3 : 1.0}
+            />
+          </Box>
+        );
+      })}
+    </group>
   );
 }
 
@@ -400,8 +480,9 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
         </mesh>
       )}
     </group>
-  );
+);
 }
+
 // Scene Setup
 // Scene component that contains all 3D elements
 function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool }) {
