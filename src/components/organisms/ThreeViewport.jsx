@@ -101,10 +101,16 @@ function Room({ room, selectedObject, onObjectSelect }) {
 // Wall Component
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect }) {
+  // Early return if wall object is invalid - MUST be before any hooks
+  if (!wall || typeof wall !== 'object') {
+    console.warn('Invalid wall object provided to WallComponent');
+    return null;
+  }
+
   const meshRef = useRef();
 
   useEffect(() => {
-    // Skip effect if wall is invalid
+    // Skip effect if wall is invalid or mesh not ready
     if (!wall || !meshRef.current) return;
     
     if (isSelected) {
@@ -113,12 +119,6 @@ function WallComponent({ wall, isSelected, onSelect }) {
       meshRef.current.material.color.setHex(0x6b7280);
     }
   }, [isSelected, wall]);
-
-// Early return if wall object is invalid
-  if (!wall || typeof wall !== 'object') {
-    console.warn('Invalid wall object provided to WallComponent');
-    return null;
-  }
 
   // Safe property access with fallback values and validation
   const { width = 1, height = 1 } = wall.dimensions || {};
