@@ -104,13 +104,20 @@ function WallComponent({ wall, isSelected, onSelect }) {
   const meshRef = useRef();
   
   // useFrame must be called unconditionally - move all checks inside
-  useFrame(() => {
+useFrame(() => {
     // Only update material if we have valid wall data and mesh reference
     if (meshRef.current && wall && wall.dimensions && wall.position) {
-      if (isSelected) {
-        meshRef.current.material.emissive.setHex(0x2563eb);
-      } else {
-        meshRef.current.material.emissive.setHex(0x000000);
+      try {
+        // Ensure material exists and has emissive property
+        if (meshRef.current.material && meshRef.current.material.emissive) {
+          if (isSelected) {
+            meshRef.current.material.emissive.setHex(0x2563eb);
+          } else {
+            meshRef.current.material.emissive.setHex(0x000000);
+          }
+        }
+      } catch (error) {
+        console.warn('Error updating wall material:', error);
       }
     }
   });
@@ -150,13 +157,20 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
   
   // useFrame must be called unconditionally - move all checks inside
-  useFrame(() => {
+useFrame(() => {
     // Only update material if we have valid furniture data and mesh reference
     if (meshRef.current && furniture && furniture.position) {
-      if (isSelected) {
-        meshRef.current.material.emissive.setHex(0x10b981);
-      } else {
-        meshRef.current.material.emissive.setHex(0x000000);
+      try {
+        // Ensure material exists and has emissive property
+        if (meshRef.current.material && meshRef.current.material.emissive) {
+          if (isSelected) {
+            meshRef.current.material.emissive.setHex(0x10b981);
+          } else {
+            meshRef.current.material.emissive.setHex(0x000000);
+          }
+        }
+      } catch (error) {
+        console.warn('Error updating furniture material:', error);
       }
     }
   });
