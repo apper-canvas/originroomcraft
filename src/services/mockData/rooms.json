@@ -1,0 +1,111 @@
+[
+  {
+    "Id": 1,
+    "name": "Living Room",
+    "dimensions": {
+      "width": 12,
+      "length": 8,
+      "height": 3
+    },
+    "walls": [
+      {
+        "id": "wall1",
+        "position": { "x": 0, "z": -4 },
+        "rotation": 0,
+        "dimensions": { "width": 12, "height": 3 },
+        "color": "#f8f9fa",
+        "openings": [
+          {
+            "id": "door1",
+            "type": "door",
+            "position": { "x": 2, "y": 0 },
+            "dimensions": { "width": 1, "height": 2.1 }
+          }
+        ]
+      }
+    ],
+    "furniture": [
+      {
+        "id": "sofa1",
+        "type": "sofa",
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#8b5cf6",
+        "material": "fabric"
+      },
+      {
+        "id": "table1",
+        "type": "table",
+        "position": { "x": 2, "y": 0, "z": 2 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#f59e0b",
+        "material": "wood"
+      }
+    ],
+    "lastModified": "2024-01-15T10:30:00.000Z"
+  },
+  {
+    "Id": 2,
+    "name": "Bedroom",
+    "dimensions": {
+      "width": 10,
+      "length": 10,
+      "height": 3
+    },
+    "walls": [],
+    "furniture": [
+      {
+        "id": "bed1",
+        "type": "bed",
+        "position": { "x": 0, "y": 0, "z": -2 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#06b6d4",
+        "material": "fabric"
+      },
+      {
+        "id": "wardrobe1",
+        "type": "wardrobe",
+        "position": { "x": -3, "y": 0, "z": -4 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#ef4444",
+        "material": "wood"
+      }
+    ],
+    "lastModified": "2024-01-14T15:45:00.000Z"
+  },
+  {
+    "Id": 3,
+    "name": "Office",
+    "dimensions": {
+      "width": 8,
+      "length": 6,
+      "height": 3
+    },
+    "walls": [],
+    "furniture": [
+      {
+        "id": "desk1",
+        "type": "desk",
+        "position": { "x": 0, "y": 0, "z": -1 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#3b82f6",
+        "material": "wood"
+      },
+      {
+        "id": "chair1",
+        "type": "chair",
+        "position": { "x": 0, "y": 0, "z": 1 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "color": "#10b981",
+        "material": "plastic"
+      }
+    ],
+    "lastModified": "2024-01-13T09:20:00.000Z"
+  }
+]

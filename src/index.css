@@ -1,0 +1,309 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'react-toastify/dist/ReactToastify.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  background-color: #ffffff;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* React-toastify overrides */
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+.Toastify__toast {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  min-height: auto;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.Toastify__progress-bar {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Canvas and 3D styles */
+canvas {
+  outline: none;
+  display: block;
+}
+
+.scene-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Prevent text selection during 3D interactions */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Premium input styles */
+.premium-input {
+  @apply bg-white/90 border-2 border-gray-200 rounded-lg px-4 py-2 text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+}
+
+.premium-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Custom animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, #f0f0f0 0px, rgba(229, 229, 229, 0.8) 40px, #f0f0f0 80px);
+  background-size: 200px 100%;
+}
+
+/* Tooltip styles */
+.tooltip {
+  @apply absolute z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded shadow-lg pointer-events-none;
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+}
+
+/* Tool palette styles */
+.tool-item {
+  @apply relative flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg;
+}
+
+.tool-item.active {
+  @apply ring-2 ring-primary shadow-lg;
+}
+
+.tool-item:hover {
+  transform: translateY(-2px);
+}
+
+/* 3D viewport styles */
+.viewport-overlay {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.viewport-controls {
+  pointer-events: auto;
+}
+
+/* Color picker styles */
+.color-swatch {
+  @apply w-8 h-8 rounded-lg border-2 border-white shadow-md cursor-pointer transition-all duration-200 hover:scale-110;
+}
+
+.color-swatch.active {
+  @apply ring-2 ring-primary ring-offset-2;
+}
+
+/* Premium card styles */
+.premium-card {
+  @apply bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-premium;
+}
+
+.premium-card:hover {
+  @apply shadow-2xl;
+  transform: translateY(-2px);
+}
+
+/* Sidebar styles */
+.sidebar {
+  @apply bg-white/95 backdrop-blur-md border-r border-gray-200/50;
+}
+
+.sidebar-mobile {
+  @apply fixed inset-y-0 left-0 z-50 w-80 bg-white/95 backdrop-blur-md border-r border-gray-200/50 transform transition-transform duration-300 ease-in-out;
+}
+
+.sidebar-mobile.closed {
+  transform: translateX(-100%);
+}
+
+.sidebar-mobile.open {
+  transform: translateX(0);
+}
+
+/* Panel styles */
+.panel {
+  @apply bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200/50 shadow-lg;
+}
+
+.panel-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-200/50;
+}
+
+.panel-content {
+  @apply p-4;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-gradient-to-r from-primary to-blue-600 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105;
+}
+
+.btn-secondary {
+  @apply bg-gradient-to-r from-secondary to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105;
+}
+
+.btn-accent {
+  @apply bg-gradient-to-r from-accent to-green-600 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105;
+}
+
+.btn-ghost {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105;
+}
+
+/* Form styles */
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+}
+
+.form-input:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Loading animations */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .crisp-edges {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
