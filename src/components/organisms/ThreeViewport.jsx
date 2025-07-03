@@ -104,15 +104,10 @@ function WallComponent({ wall, isSelected, onSelect }) {
   // CRITICAL: All hooks must be called before any conditional returns
   const meshRef = useRef();
 
-  // Early return if wall object is invalid - MUST be after all hooks
-  if (!wall || typeof wall !== 'object') {
-    console.warn('Invalid wall object provided to WallComponent');
-    return null;
-  }
-
+  // useEffect must be called before any early returns to maintain hook order
   useEffect(() => {
     // Skip effect if wall is invalid or mesh not ready
-    if (!wall || !meshRef.current) return;
+    if (!wall || typeof wall !== 'object' || !meshRef.current) return;
     
     if (isSelected) {
       meshRef.current.material.color.setHex(0x3b82f6);
@@ -120,6 +115,12 @@ function WallComponent({ wall, isSelected, onSelect }) {
       meshRef.current.material.color.setHex(0x6b7280);
     }
   }, [isSelected, wall]);
+
+  // Early return if wall object is invalid - MUST be after all hooks
+  if (!wall || typeof wall !== 'object') {
+    console.warn('Invalid wall object provided to WallComponent');
+    return null;
+  }
 
   // Safe property access with fallback values and validation
   const { width = 1, height = 1 } = wall.dimensions || {};
@@ -169,7 +170,50 @@ function WallComponent({ wall, isSelected, onSelect }) {
 function FurnitureComponent({ furniture, isSelected, onSelect }) {
   const meshRef = useRef();
 
-  // Early return if furniture object is invalid
+  // useEffect must be called before any early returns to maintain hook order
+  useEffect(() => {
+    // Skip effect if furniture is invalid or mesh not ready
+    if (!furniture || typeof furniture !== 'object' || !meshRef.current) return;
+    
+    try {
+      if (isSelected) {
+        meshRef.current.material.color.setHex(0x10b981);
+      } else {
+        // Define getFurnitureColor inside effect to access furniture safely
+        const getFurnitureColor = () => {
+          if (furniture.color) {
+            // Validate color value
+            const color = Number(furniture.color);
+            return !isNaN(color) ? color : 0x9ca3af;
+          }
+          
+          // Safe type checking with fallback for color selection
+          const furnitureType = furniture.type || 'default';
+          switch (furnitureType) {
+            case 'sofa':
+              return 0x8b5cf6;
+            case 'bed':
+              return 0x3b82f6;
+            case 'table':
+              return 0x10b981;
+            case 'chair':
+              return 0xf59e0b;
+            case 'desk':
+              return 0xef4444;
+            case 'wardrobe':
+              return 0x6b7280;
+            default:
+              return 0x9ca3af;
+          }
+        };
+        meshRef.current.material.color.setHex(getFurnitureColor());
+      }
+    } catch (error) {
+      console.error('Error updating furniture material:', error);
+    }
+  }, [isSelected, furniture]);
+
+  // Early return if furniture object is invalid - MUST be after all hooks
   if (!furniture || typeof furniture !== 'object') {
     console.warn('Invalid furniture object provided to FurnitureComponent');
     return null;
@@ -215,33 +259,6 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
         return [1, 1, 1];
     }
   };
-  
-  const getFurnitureColor = () => {
-    if (furniture.color) {
-      // Validate color value
-      const color = Number(furniture.color);
-      return !isNaN(color) ? color : 0x9ca3af;
-    }
-    
-    // Safe type checking with fallback for color selection
-    const furnitureType = furniture.type || 'default';
-    switch (furnitureType) {
-      case 'sofa':
-        return 0x8b5cf6;
-      case 'bed':
-        return 0x3b82f6;
-      case 'table':
-        return 0x10b981;
-      case 'chair':
-        return 0xf59e0b;
-      case 'desk':
-        return 0xef4444;
-      case 'wardrobe':
-        return 0x6b7280;
-      default:
-        return 0x9ca3af;
-    }
-  };
 
   const getRotationY = () => {
     if (!furniture.rotation) return 0;
@@ -260,21 +277,6 @@ function FurnitureComponent({ furniture, isSelected, onSelect }) {
 
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
-
-  useEffect(() => {
-    // Skip effect if furniture is invalid or mesh not ready
-    if (!furniture || !meshRef.current) return;
-    
-    try {
-      if (isSelected) {
-        meshRef.current.material.color.setHex(0x10b981);
-      } else {
-        meshRef.current.material.color.setHex(getFurnitureColor());
-      }
-    } catch (error) {
-      console.error('Error updating furniture material:', error);
-    }
-  }, [isSelected, furniture]);
   
   return (
     <group position={validatedPosition} rotation={validatedRotation}>
