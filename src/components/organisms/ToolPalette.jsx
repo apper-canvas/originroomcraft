@@ -233,7 +233,7 @@ const handleAddStructure = (structureType) => {
           </h3>
           
           <div className="space-y-2">
-            <motion.button
+<motion.button
               onClick={() => {
                 // Clear all furniture
                 onAddObject({ type: 'clear', target: 'furniture' });
@@ -248,8 +248,8 @@ const handleAddStructure = (structureType) => {
             
             <motion.button
               onClick={() => {
-                // Reset room to default
-                onRoomResize({ width: 10, length: 10, height: 3 });
+                // Reset room to default state
+                onAddObject({ type: 'reset', target: 'room' });
                 setRoomDimensions({ width: 10, length: 10, height: 3 });
               }}
               className="w-full btn-ghost text-left flex items-center space-x-2"

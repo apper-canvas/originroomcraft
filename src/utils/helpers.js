@@ -377,3 +377,24 @@ export const removeFromLocalStorage = (key) => {
     return false;
   }
 };
+
+// Clear all furniture from room
+export const clearRoomFurniture = (room) => {
+  return {
+    ...room,
+    furniture: [],
+    lastModified: new Date().toISOString()
+  };
+};
+
+// Reset room to default state
+export const resetRoomToDefaults = (room) => {
+  return {
+    ...room,
+    dimensions: { width: 10, length: 10, height: 3 },
+    furniture: [],
+    walls: [],
+    ceiling: null,
+    lastModified: new Date().toISOString()
+  };
+};

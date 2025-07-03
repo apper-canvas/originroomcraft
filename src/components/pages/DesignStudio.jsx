@@ -116,7 +116,18 @@ const DesignStudio = () => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
       
-      if (objectData.type === 'furniture') {
+      if (objectData.type === 'clear' && objectData.target === 'furniture') {
+        // Clear all furniture
+        newRoom.furniture = [];
+        toast.success("All furniture cleared!");
+      } else if (objectData.type === 'reset' && objectData.target === 'room') {
+        // Reset room to defaults
+        newRoom.dimensions = { width: 10, length: 10, height: 3 };
+        newRoom.furniture = [];
+        newRoom.walls = [];
+        newRoom.ceiling = null;
+        toast.success("Room reset to defaults!");
+      } else if (objectData.type === 'furniture') {
         newRoom.furniture.push({
           id: generateId(),
           ...objectData,

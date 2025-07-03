@@ -381,10 +381,15 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
       
       const offset = calculateDragOffset(worldPos, currentPos);
       setDragOffset(offset);
-      
-      // Disable orbit controls during drag
+// Disable orbit controls during drag
       if (gl.domElement) {
         gl.domElement.style.cursor = 'grabbing';
+      }
+      
+      // Disable OrbitControls during move tool drag
+      const orbitControls = gl.domElement.querySelector('canvas')?.orbitControls;
+      if (orbitControls) {
+        orbitControls.enabled = false;
       }
     } catch (error) {
       console.error('Error starting drag:', error);
@@ -434,12 +439,18 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
   const handlePointerUp = (e) => {
     if (!isDragging) return;
     
-    e.stopPropagation();
+e.stopPropagation();
     setIsDragging(false);
     
     // Re-enable orbit controls
     if (gl.domElement) {
       gl.domElement.style.cursor = 'default';
+    }
+    
+    // Re-enable OrbitControls after move tool drag
+    const orbitControls = gl.domElement.querySelector('canvas')?.orbitControls;
+    if (orbitControls) {
+      orbitControls.enabled = true;
     }
   };
 
@@ -568,6 +579,7 @@ const ThreeViewport = ({
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-white to-gray-50">
       {/* 3D Canvas */}
+{/* 3D Canvas */}
       <Canvas
         camera={{ position: [5, 5, 5], fov: 75 }}
         shadows
@@ -575,12 +587,12 @@ const ThreeViewport = ({
       >
         <OrbitControls
           ref={controlsRef}
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
+          enablePan={selectedTool !== 'move'}
+          enableZoom={selectedTool !== 'move'}
+          enableRotate={selectedTool !== 'move'}
           onStart={() => setIsDragging(true)}
           onEnd={() => setIsDragging(false)}
-/>
+        />
         
         <Scene
           room={room}
@@ -590,7 +602,6 @@ const ThreeViewport = ({
           selectedTool={selectedTool}
         />
       </Canvas>
-      {/* Viewport Controls */}
       <div className="absolute bottom-4 left-4 flex space-x-2">
         {[
           { key: 'perspective', icon: 'Eye', label: 'Perspective' },
