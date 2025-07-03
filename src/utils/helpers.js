@@ -221,9 +221,10 @@ export const getFurnitureColor = (furniture) => {
       return 0xef4444;
     case 'wardrobe':
       return 0x6b7280;
-    default:
+default:
       return 0x9ca3af;
   }
+};
 
 // Export room to JSON
 export const exportRoomToJSON = (room) => {
