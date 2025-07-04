@@ -242,11 +242,10 @@ return (
             <meshStandardMaterial 
               color={opening.type === 'door' ? 0x8b4513 : 0x87ceeb} 
               transparent 
-              opacity={opening.type === 'window' ? 0.3 : 1.0}
+opacity={opening.type === 'window' ? 0.3 : 1.0}
             />
           </Box>
         );
-);
       })}
     </group>
   );
