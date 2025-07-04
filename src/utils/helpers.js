@@ -449,3 +449,41 @@ export const processStructureDrag = (position, roomDimensions, structureDimensio
   
   return newPosition;
 };
+
+// Enhanced drag state management
+export const createDragState = (initialPosition, offset = { x: 0, y: 0, z: 0 }) => {
+  return {
+    isDragging: true,
+    startPosition: { ...initialPosition },
+    currentPosition: { ...initialPosition },
+    offset: { ...offset },
+    timestamp: Date.now()
+  };
+};
+
+// Clear drag state
+export const clearDragState = () => {
+  return {
+    isDragging: false,
+    startPosition: null,
+    currentPosition: null,
+    offset: { x: 0, y: 0, z: 0 },
+    timestamp: null
+  };
+};
+
+// Validate drag movement
+export const validateDragMovement = (dragState, newPosition, constraints = {}) => {
+  if (!isDragInProgress(dragState) || !newPosition) return false;
+  
+  const { maxDistance = Infinity, minMovement = 0.01 } = constraints;
+  
+  // Check minimum movement threshold
+  const distance = calculateDistance(dragState.startPosition, newPosition);
+  if (distance < minMovement) return false;
+  
+  // Check maximum distance constraint
+  if (distance > maxDistance) return false;
+  
+  return true;
+};

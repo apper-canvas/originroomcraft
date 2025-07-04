@@ -256,6 +256,7 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
   const { camera, gl } = useThree();
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, z: 0 });
+  const [dragActive, setDragActive] = useState(false);
 
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   // Material color effect - only runs when furniture is valid
@@ -274,21 +275,50 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
     }
   }, [isSelected, furniture, isDragging]);
 
-  // Global event listeners for drag operations - only runs when dragging
+// Global event listeners for drag operations - only runs when dragging
   useEffect(() => {
-    if (!isDragging) return;
+    if (!isDragging || !dragActive) return;
 
-    const handleGlobalMove = (e) => handlePointerMove(e);
-    const handleGlobalUp = (e) => handlePointerUp(e);
+    const handleGlobalMove = (e) => {
+      e.preventDefault();
+      handlePointerMove(e);
+    };
     
-    document.addEventListener('pointermove', handleGlobalMove);
-    document.addEventListener('pointerup', handleGlobalUp);
+    const handleGlobalUp = (e) => {
+      e.preventDefault();
+      handlePointerUp(e);
+    };
+    
+    document.addEventListener('pointermove', handleGlobalMove, { passive: false });
+    document.addEventListener('pointerup', handleGlobalUp, { passive: false });
+    document.addEventListener('pointercancel', handleGlobalUp, { passive: false });
     
     return () => {
       document.removeEventListener('pointermove', handleGlobalMove);
       document.removeEventListener('pointerup', handleGlobalUp);
+      document.removeEventListener('pointercancel', handleGlobalUp);
     };
-  }, [isDragging, dragOffset, roomDimensions]);
+  }, [isDragging, dragActive, dragOffset, roomDimensions]);
+
+  // OrbitControls management effect
+  useEffect(() => {
+    if (!orbitControlsRef?.current) return;
+    
+    const controls = orbitControlsRef.current;
+    const originalEnabled = controls.enabled;
+    
+    if (isDragging && dragActive) {
+      controls.enabled = false;
+    } else if (!isDragging) {
+      controls.enabled = originalEnabled;
+    }
+    
+    return () => {
+      if (controls) {
+        controls.enabled = originalEnabled;
+      }
+    };
+  }, [isDragging, dragActive]);
 
   // Early return AFTER all hooks - furniture validation
   if (!furniture || typeof furniture !== 'object') {
@@ -355,16 +385,19 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
   
-  // Drag event handlers
+// Drag event handlers
   const handlePointerDown = (e) => {
-    if (!isDragMode) {
-      e.stopPropagation();
-      onSelect?.(furniture);
+    // Always handle selection first
+    e.stopPropagation();
+    onSelect?.(furniture);
+    
+    // Only proceed with drag if in drag mode
+    if (!isDragMode || (selectedTool !== 'move' && selectedTool !== 'select')) {
       return;
     }
 
-    e.stopPropagation();
     setIsDragging(true);
+    setDragActive(true);
     
     // Calculate world position from screen coordinates
     const rect = gl.domElement.getBoundingClientRect();
@@ -381,23 +414,22 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
       
       const offset = calculateDragOffset(worldPos, currentPos);
       setDragOffset(offset);
-// Disable orbit controls during drag
+      
+      // Set cursor state
       if (gl.domElement) {
         gl.domElement.style.cursor = 'grabbing';
       }
       
-      // Disable OrbitControls during move tool drag
-      if (orbitControlsRef?.current) {
-        orbitControlsRef.current.enabled = false;
-      }
+      // Disable OrbitControls during drag - will be handled by effect
     } catch (error) {
       console.error('Error starting drag:', error);
       setIsDragging(false);
+      setDragActive(false);
     }
   };
 
-  const handlePointerMove = (e) => {
-    if (!isDragging || !isDragMode) return;
+const handlePointerMove = (e) => {
+    if (!isDragging || !dragActive || !isDragMode) return;
 
     e.stopPropagation();
     
@@ -435,21 +467,19 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
     }
   };
 
-  const handlePointerUp = (e) => {
-    if (!isDragging) return;
+const handlePointerUp = (e) => {
+    if (!isDragging && !dragActive) return;
     
-e.stopPropagation();
+    e.stopPropagation();
     setIsDragging(false);
+    setDragActive(false);
     
-// Re-enable orbit controls
+    // Reset cursor state
     if (gl.domElement) {
-      gl.domElement.style.cursor = 'default';
+      gl.domElement.style.cursor = isDragMode ? 'grab' : 'default';
     }
     
-    // Re-enable OrbitControls after move tool drag
-    if (orbitControlsRef?.current) {
-      orbitControlsRef.current.enabled = true;
-    }
+    // OrbitControls will be re-enabled by the effect
   };
 
   return (
@@ -463,8 +493,8 @@ e.stopPropagation();
         args={geometry}
         position={[0, geometry[1] / 2, 0]}
         onPointerDown={handlePointerDown}
-        onPointerEnter={() => {
-          if (isDragMode && gl.domElement) {
+onPointerEnter={() => {
+          if (isDragMode && !isDragging && gl.domElement) {
             gl.domElement.style.cursor = 'grab';
           }
         }}
@@ -582,11 +612,11 @@ const handleCameraPreset = (preset) => {
         shadows
         className="w-full h-full"
 >
-        <OrbitControls
+<OrbitControls
           ref={orbitControlsRef}
-          enablePan={selectedTool !== 'move'}
-          enableZoom={selectedTool !== 'move'}
-          enableRotate={selectedTool !== 'move'}
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
           onStart={() => setIsDragging(true)}
           onEnd={() => setIsDragging(false)}
         />
