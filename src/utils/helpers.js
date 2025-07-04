@@ -1,10 +1,4 @@
 import * as THREE from "three";
-import { 
-  getFurnitureDefaults, 
-  processFurnitureMovement, 
-  validateFurnitureSelection, 
-  getFurnitureById 
-} from "@/utils/helpers";
 // Generate unique integer ID
 let lastUsedId = 0;
 export const generateId = () => {
