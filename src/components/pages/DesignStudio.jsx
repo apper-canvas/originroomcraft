@@ -257,10 +257,10 @@ const DesignStudio = () => {
         </div>
       </header>
 
-      {/* Main Content */}
+{/* Main Content */}
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 sidebar">
+        <div className="hidden lg:block w-80 flex-shrink-0 sidebar">
           <ToolPalette
             selectedTool={selectedTool}
             onToolSelect={handleToolSelect}
@@ -299,9 +299,8 @@ const DesignStudio = () => {
             </>
           )}
         </AnimatePresence>
-
-        {/* 3D Viewport */}
-        <div className="flex-1 relative">
+{/* 3D Viewport */}
+        <div className="flex-1 min-w-0 relative">
           <ThreeViewport
             room={room}
             selectedTool={selectedTool}
@@ -317,7 +316,7 @@ const DesignStudio = () => {
         <AnimatePresence>
           {(selectedObject || propertiesOpen) && (
             <motion.div
-              className="w-80 max-w-[90vw] min-w-[280px] lg:w-80 lg:max-w-80 bg-white/90 backdrop-blur-md border-l border-gray-200/50 h-full max-h-screen overflow-hidden"
+              className="w-80 flex-shrink-0 max-w-[90vw] min-w-[280px] lg:w-80 lg:max-w-80 bg-white/90 backdrop-blur-md border-l border-gray-200/50 h-full max-h-screen overflow-hidden"
               initial={{ x: 320 }}
               animate={{ x: 0 }}
               exit={{ x: 320 }}
