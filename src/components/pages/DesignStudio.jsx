@@ -311,9 +311,9 @@ const DesignStudio = () => {
 
         {/* Properties Panel */}
         <AnimatePresence>
-          {(selectedObject || propertiesOpen) && (
+{(selectedObject || propertiesOpen) && (
             <motion.div
-              className="w-80 bg-white/90 backdrop-blur-md border-l border-gray-200/50"
+              className="w-80 max-w-[90vw] min-w-[280px] lg:w-80 lg:max-w-80 bg-white/90 backdrop-blur-md border-l border-gray-200/50 h-full max-h-screen overflow-hidden"
               initial={{ x: 320 }}
               animate={{ x: 0 }}
               exit={{ x: 320 }}

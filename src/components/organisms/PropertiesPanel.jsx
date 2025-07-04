@@ -62,8 +62,8 @@ const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
     );
   }
 
-  return (
-    <div className="h-full flex flex-col bg-white/95 backdrop-blur-md">
+return (
+    <div className="h-full max-h-screen flex flex-col bg-white/95 backdrop-blur-md overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200/50 flex items-center justify-between">
         <div>
