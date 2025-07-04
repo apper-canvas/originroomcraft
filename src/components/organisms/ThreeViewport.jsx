@@ -38,7 +38,7 @@ function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpda
       </group>
 
       {/* Furniture */}
-      {(room?.furniture || []).map((furniture) => (
+{(room?.furniture || []).map((furniture) => (
         <FurnitureComponent
           key={furniture.id}
           furniture={furniture}
@@ -46,6 +46,7 @@ function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpda
           onSelect={() => onObjectSelect(furniture)}
           onDrag={onObjectUpdate}
           isDragMode={selectedTool === 'select' || selectedTool === 'move'}
+          selectedTool={selectedTool}
           roomDimensions={room?.dimensions}
           orbitControlsRef={orbitControlsRef}
         />
@@ -294,13 +295,12 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
     document.addEventListener('pointerup', handleGlobalUp, { passive: false });
     document.addEventListener('pointercancel', handleGlobalUp, { passive: false });
     
-    return () => {
+return () => {
       document.removeEventListener('pointermove', handleGlobalMove);
       document.removeEventListener('pointerup', handleGlobalUp);
       document.removeEventListener('pointercancel', handleGlobalUp);
     };
   }, [isDragging, dragActive, dragOffset, roomDimensions]);
-
   // OrbitControls management effect
   useEffect(() => {
     if (!orbitControlsRef?.current) return;
