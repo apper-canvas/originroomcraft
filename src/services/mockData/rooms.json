@@ -1,6 +1,6 @@
 [
   {
-    "Id": 1,
+    "id": 1,
     "name": "Living Room",
     "dimensions": {
       "width": 12,
@@ -9,7 +9,7 @@
     },
     "walls": [
       {
-        "id": "wall1",
+        "id": 1001,
         "position": { "x": 0, "z": -4 },
         "rotation": 0,
         "dimensions": { "width": 12, "height": 3 },
@@ -26,20 +26,22 @@
     ],
     "furniture": [
       {
-        "id": "sofa1",
+        "id": 2001,
         "type": "sofa",
-"position": { "x": 0, "y": 0, "z": 0 },
-        "rotation": 0,
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 2, "height": 0.8, "depth": 1 },
         "color": "#8b5cf6",
         "material": "fabric"
       },
       {
-        "id": "table1",
+        "id": 2002,
         "type": "table",
-"position": { "x": 2, "y": 0, "z": 2 },
-        "rotation": 0,
+        "position": { "x": 2, "y": 0, "z": 2 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 1.5, "height": 0.8, "depth": 1 },
         "color": "#f59e0b",
         "material": "wood"
       }
@@ -47,7 +49,7 @@
     "lastModified": "2024-01-15T10:30:00.000Z"
   },
   {
-    "Id": 2,
+    "id": 2,
     "name": "Bedroom",
     "dimensions": {
       "width": 10,
@@ -57,20 +59,22 @@
     "walls": [],
     "furniture": [
       {
-        "id": "bed1",
+        "id": 3001,
         "type": "bed",
-"position": { "x": 0, "y": 0, "z": -2 },
-        "rotation": 0,
+        "position": { "x": 0, "y": 0, "z": -2 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 2, "height": 0.6, "depth": 1.5 },
         "color": "#06b6d4",
         "material": "fabric"
       },
       {
-        "id": "wardrobe1",
+        "id": 3002,
         "type": "wardrobe",
-"position": { "x": -3, "y": 0, "z": -4 },
-        "rotation": 0,
+        "position": { "x": -3, "y": 0, "z": -4 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 1, "height": 2, "depth": 0.6 },
         "color": "#ef4444",
         "material": "wood"
       }
@@ -78,7 +82,7 @@
     "lastModified": "2024-01-14T15:45:00.000Z"
   },
   {
-    "Id": 3,
+    "id": 3,
     "name": "Office",
     "dimensions": {
       "width": 8,
@@ -88,20 +92,22 @@
     "walls": [],
     "furniture": [
       {
-        "id": "desk1",
+        "id": 4001,
         "type": "desk",
-"position": { "x": 0, "y": 0, "z": -1 },
-        "rotation": 0,
+        "position": { "x": 0, "y": 0, "z": -1 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 1.2, "height": 0.8, "depth": 0.6 },
         "color": "#3b82f6",
         "material": "wood"
       },
       {
-        "id": "chair1",
+        "id": 4002,
         "type": "chair",
-"position": { "x": 0, "y": 0, "z": 1 },
-        "rotation": 0,
+        "position": { "x": 0, "y": 0, "z": 1 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
         "scale": { "x": 1, "y": 1, "z": 1 },
+        "dimensions": { "width": 0.6, "height": 1, "depth": 0.6 },
         "color": "#10b981",
         "material": "plastic"
       }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import ApperIcon from '@/components/ApperIcon';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import ApperIcon from "@/components/ApperIcon";
 
 const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
   const [properties, setProperties] = useState({});
@@ -11,32 +11,36 @@ const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
     }
   }, [selectedObject]);
 
-const handlePropertyChange = (key, value) => {
+  const handlePropertyChange = (key, value) => {
     const newProperties = { ...properties, [key]: value };
     setProperties(newProperties);
-    
+
     if (onObjectUpdate && selectedObject?.id) {
       // Validate ID is integer for furniture/structure operations
-      const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+      const objectId = Number.isInteger(selectedObject.id)
+        ? selectedObject.id
+        : parseInt(selectedObject.id);
       if (objectId > 0) {
         onObjectUpdate(objectId, newProperties);
       }
     }
   };
 
-const handleNestedPropertyChange = (parentKey, childKey, value) => {
+  const handleNestedPropertyChange = (parentKey, childKey, value) => {
     const newProperties = {
       ...properties,
       [parentKey]: {
         ...properties[parentKey],
-        [childKey]: value
-      }
+        [childKey]: value,
+      },
     };
     setProperties(newProperties);
-    
+
     if (onObjectUpdate && selectedObject?.id) {
       // Validate ID is integer for furniture/structure operations
-      const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+      const objectId = Number.isInteger(selectedObject.id)
+        ? selectedObject.id
+        : parseInt(selectedObject.id);
       if (objectId > 0) {
         onObjectUpdate(objectId, newProperties);
       }
@@ -44,18 +48,18 @@ const handleNestedPropertyChange = (parentKey, childKey, value) => {
   };
 
   const colorPresets = [
-    { name: 'White', color: '#ffffff' },
-    { name: 'Light Gray', color: '#f8f9fa' },
-    { name: 'Gray', color: '#6b7280' },
-    { name: 'Dark Gray', color: '#374151' },
-    { name: 'Red', color: '#ef4444' },
-    { name: 'Orange', color: '#f59e0b' },
-    { name: 'Yellow', color: '#eab308' },
-    { name: 'Green', color: '#22c55e' },
-    { name: 'Blue', color: '#3b82f6' },
-    { name: 'Purple', color: '#8b5cf6' },
-    { name: 'Pink', color: '#ec4899' },
-    { name: 'Brown', color: '#a3785b' },
+    { name: "White", color: "#ffffff" },
+    { name: "Light Gray", color: "#f8f9fa" },
+    { name: "Gray", color: "#6b7280" },
+    { name: "Dark Gray", color: "#374151" },
+    { name: "Red", color: "#ef4444" },
+    { name: "Orange", color: "#f59e0b" },
+    { name: "Yellow", color: "#eab308" },
+    { name: "Green", color: "#22c55e" },
+    { name: "Blue", color: "#3b82f6" },
+    { name: "Purple", color: "#8b5cf6" },
+    { name: "Pink", color: "#ec4899" },
+    { name: "Brown", color: "#a3785b" },
   ];
 
   if (!selectedObject) {
@@ -70,14 +74,14 @@ const handleNestedPropertyChange = (parentKey, childKey, value) => {
     );
   }
 
-return (
+  return (
     <div className="h-full max-h-screen flex flex-col bg-white/95 backdrop-blur-md overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200/50 flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-800">Properties</h2>
           <p className="text-sm text-gray-600 capitalize">
-            {selectedObject.type || 'Object'} Settings
+            {selectedObject.type || "Object"} Settings
           </p>
         </div>
         <button
@@ -96,7 +100,7 @@ return (
             <ApperIcon name="Settings" size={16} />
             <span>Basic Properties</span>
           </h3>
-          
+
           {selectedObject.type && (
             <div className="form-group">
               <label className="form-label">Type</label>
@@ -114,8 +118,8 @@ return (
               <label className="form-label">Name</label>
               <input
                 type="text"
-                value={properties.name || ''}
-                onChange={(e) => handlePropertyChange('name', e.target.value)}
+                value={properties.name || ""}
+                onChange={(e) => handlePropertyChange("name", e.target.value)}
                 className="form-input"
                 placeholder="Enter name"
               />
@@ -130,9 +134,9 @@ return (
               <ApperIcon name="Move" size={16} />
               <span>Position</span>
             </h3>
-            
+
             <div className="grid grid-cols-1 gap-3">
-              {['x', 'y', 'z'].map((axis) => (
+              {["x", "y", "z"].map((axis) => (
                 <div key={axis} className="form-group">
                   <label className="form-label">
                     {axis.toUpperCase()} Position
@@ -140,7 +144,13 @@ return (
                   <input
                     type="number"
                     value={properties.position?.[axis] || 0}
-                    onChange={(e) => handleNestedPropertyChange('position', axis, parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleNestedPropertyChange(
+                        "position",
+                        axis,
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
                     step="0.1"
                     className="form-input"
                   />
@@ -157,18 +167,27 @@ return (
               <ApperIcon name="RotateCw" size={16} />
               <span>Rotation</span>
             </h3>
-            
+
             <div className="grid grid-cols-1 gap-3">
-              {typeof selectedObject.rotation === 'object' ? (
-                ['x', 'y', 'z'].map((axis) => (
+              {typeof selectedObject.rotation === "object" ? (
+                ["x", "y", "z"].map((axis) => (
                   <div key={axis} className="form-group">
                     <label className="form-label">
                       {axis.toUpperCase()} Rotation (degrees)
                     </label>
                     <input
                       type="number"
-                      value={((properties.rotation?.[axis] || 0) * 180 / Math.PI).toFixed(1)}
-                      onChange={(e) => handleNestedPropertyChange('rotation', axis, (parseFloat(e.target.value) || 0) * Math.PI / 180)}
+                      value={(
+                        ((properties.rotation?.[axis] || 0) * 180) /
+                        Math.PI
+                      ).toFixed(1)}
+                      onChange={(e) =>
+                        handleNestedPropertyChange(
+                          "rotation",
+                          axis,
+                          ((parseFloat(e.target.value) || 0) * Math.PI) / 180
+                        )
+                      }
                       step="1"
                       min="-180"
                       max="180"
@@ -181,8 +200,16 @@ return (
                   <label className="form-label">Rotation (degrees)</label>
                   <input
                     type="number"
-                    value={((properties.rotation || 0) * 180 / Math.PI).toFixed(1)}
-                    onChange={(e) => handlePropertyChange('rotation', (parseFloat(e.target.value) || 0) * Math.PI / 180)}
+                    value={(
+                      ((properties.rotation || 0) * 180) /
+                      Math.PI
+                    ).toFixed(1)}
+                    onChange={(e) =>
+                      handlePropertyChange(
+                        "rotation",
+                        ((parseFloat(e.target.value) || 0) * Math.PI) / 180
+                      )
+                    }
                     step="1"
                     min="-180"
                     max="180"
@@ -201,9 +228,9 @@ return (
               <ApperIcon name="Maximize" size={16} />
               <span>Scale</span>
             </h3>
-            
+
             <div className="grid grid-cols-1 gap-3">
-              {['x', 'y', 'z'].map((axis) => (
+              {["x", "y", "z"].map((axis) => (
                 <div key={axis} className="form-group">
                   <label className="form-label">
                     {axis.toUpperCase()} Scale
@@ -211,7 +238,13 @@ return (
                   <input
                     type="number"
                     value={properties.scale?.[axis] || 1}
-                    onChange={(e) => handleNestedPropertyChange('scale', axis, Math.max(0.1, parseFloat(e.target.value) || 1))}
+                    onChange={(e) =>
+                      handleNestedPropertyChange(
+                        "scale",
+                        axis,
+                        Math.max(0.1, parseFloat(e.target.value) || 1)
+                      )
+                    }
                     step="0.1"
                     min="0.1"
                     max="5"
@@ -230,7 +263,7 @@ return (
               <ApperIcon name="Ruler" size={16} />
               <span>Dimensions</span>
             </h3>
-            
+
             <div className="grid grid-cols-1 gap-3">
               {Object.keys(selectedObject.dimensions).map((key) => (
                 <div key={key} className="form-group">
@@ -240,7 +273,13 @@ return (
                   <input
                     type="number"
                     value={properties.dimensions?.[key] || 0}
-                    onChange={(e) => handleNestedPropertyChange('dimensions', key, Math.max(0.1, parseFloat(e.target.value) || 0))}
+                    onChange={(e) =>
+                      handleNestedPropertyChange(
+                        "dimensions",
+                        key,
+                        Math.max(0.1, parseFloat(e.target.value) || 0)
+                      )
+                    }
                     step="0.1"
                     min="0.1"
                     max="20"
@@ -258,26 +297,28 @@ return (
             <ApperIcon name="Palette" size={16} />
             <span>Color</span>
           </h3>
-          
+
           <div className="space-y-3">
             <div className="form-group">
               <label className="form-label">Custom Color</label>
               <input
                 type="color"
-                value={properties.color || '#ffffff'}
-                onChange={(e) => handlePropertyChange('color', e.target.value)}
+                value={properties.color || "#ffffff"}
+                onChange={(e) => handlePropertyChange("color", e.target.value)}
                 className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">Color Presets</label>
               <div className="grid grid-cols-6 gap-2">
                 {colorPresets.map((preset) => (
                   <motion.button
                     key={preset.name}
-                    onClick={() => handlePropertyChange('color', preset.color)}
-                    className={`color-swatch ${properties.color === preset.color ? 'active' : ''}`}
+                    onClick={() => handlePropertyChange("color", preset.color)}
+                    className={`color-swatch ${
+                      properties.color === preset.color ? "active" : ""
+                    }`}
                     style={{ backgroundColor: preset.color }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -296,12 +337,14 @@ return (
               <ApperIcon name="Package" size={16} />
               <span>Material</span>
             </h3>
-            
+
             <div className="form-group">
               <label className="form-label">Material Type</label>
               <select
-                value={properties.material || 'wood'}
-                onChange={(e) => handlePropertyChange('material', e.target.value)}
+                value={properties.material || "wood"}
+                onChange={(e) =>
+                  handlePropertyChange("material", e.target.value)
+                }
                 className="form-input"
               >
                 <option value="wood">Wood</option>
@@ -313,32 +356,39 @@ return (
               </select>
             </div>
           </div>
-)}
+        )}
 
         {/* Opening Properties for Walls */}
-        {selectedObject.type === 'wall' && selectedObject.openings && (
+        {selectedObject.type === "wall" && selectedObject.openings && (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
               <ApperIcon name="DoorOpen" size={16} />
               <span>Openings</span>
             </h3>
-            
+
             <div className="space-y-3">
               {selectedObject.openings.map((opening, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-3 space-y-3">
+                <div
+                  key={index}
+                  className="bg-gray-50 rounded-lg p-3 space-y-3"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium capitalize">{opening.type}</span>
+                    <span className="text-sm font-medium capitalize">
+                      {opening.type}
+                    </span>
                     <button
                       onClick={() => {
-                        const newOpenings = selectedObject.openings.filter((_, i) => i !== index);
-                        handlePropertyChange('openings', newOpenings);
+                        const newOpenings = selectedObject.openings.filter(
+                          (_, i) => i !== index
+                        );
+                        handlePropertyChange("openings", newOpenings);
                       }}
                       className="text-red-500 hover:text-red-700 p-1"
                     >
                       <ApperIcon name="X" size={14} />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <div className="form-group">
                       <label className="form-label">Width (m)</label>
@@ -351,10 +401,13 @@ return (
                             ...opening,
                             dimensions: {
                               ...opening.dimensions,
-                              width: Math.max(0.3, parseFloat(e.target.value) || 1)
-                            }
+                              width: Math.max(
+                                0.3,
+                                parseFloat(e.target.value) || 1
+                              ),
+                            },
                           };
-                          handlePropertyChange('openings', newOpenings);
+                          handlePropertyChange("openings", newOpenings);
                         }}
                         step="0.1"
                         min="0.3"
@@ -373,10 +426,13 @@ return (
                             ...opening,
                             dimensions: {
                               ...opening.dimensions,
-                              height: Math.max(0.3, parseFloat(e.target.value) || 1)
-                            }
+                              height: Math.max(
+                                0.3,
+                                parseFloat(e.target.value) || 1
+                              ),
+                            },
                           };
-                          handlePropertyChange('openings', newOpenings);
+                          handlePropertyChange("openings", newOpenings);
                         }}
                         step="0.1"
                         min="0.3"
@@ -385,7 +441,7 @@ return (
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <div className="form-group">
                       <label className="form-label">X Position</label>
@@ -398,10 +454,10 @@ return (
                             ...opening,
                             position: {
                               ...opening.position,
-                              x: parseFloat(e.target.value) || 0
-                            }
+                              x: parseFloat(e.target.value) || 0,
+                            },
                           };
-                          handlePropertyChange('openings', newOpenings);
+                          handlePropertyChange("openings", newOpenings);
                         }}
                         step="0.1"
                         className="form-input"
@@ -418,10 +474,10 @@ return (
                             ...opening,
                             position: {
                               ...opening.position,
-                              y: parseFloat(e.target.value) || 0
-                            }
+                              y: parseFloat(e.target.value) || 0,
+                            },
                           };
-                          handlePropertyChange('openings', newOpenings);
+                          handlePropertyChange("openings", newOpenings);
                         }}
                         step="0.1"
                         className="form-input"
@@ -430,16 +486,19 @@ return (
                   </div>
                 </div>
               ))}
-              
+
               <div className="flex space-x-2">
                 <motion.button
                   onClick={() => {
                     const newOpening = {
-                      type: 'door',
+                      type: "door",
                       position: { x: 0, y: 0 },
-                      dimensions: { width: 0.8, height: 2.0 }
+                      dimensions: { width: 0.8, height: 2.0 },
                     };
-                    handlePropertyChange('openings', [...(selectedObject.openings || []), newOpening]);
+                    handlePropertyChange("openings", [
+                      ...(selectedObject.openings || []),
+                      newOpening,
+                    ]);
                   }}
                   className="flex-1 btn-ghost text-sm flex items-center justify-center space-x-1"
                   whileHover={{ scale: 1.02 }}
@@ -451,11 +510,14 @@ return (
                 <motion.button
                   onClick={() => {
                     const newOpening = {
-                      type: 'window',
+                      type: "window",
                       position: { x: 0, y: 1 },
-                      dimensions: { width: 1.2, height: 1.0 }
+                      dimensions: { width: 1.2, height: 1.0 },
                     };
-                    handlePropertyChange('openings', [...(selectedObject.openings || []), newOpening]);
+                    handlePropertyChange("openings", [
+                      ...(selectedObject.openings || []),
+                      newOpening,
+                    ]);
                   }}
                   className="flex-1 btn-ghost text-sm flex items-center justify-center space-x-1"
                   whileHover={{ scale: 1.02 }}
@@ -470,32 +532,39 @@ return (
         )}
 
         {/* Ceiling Properties */}
-        {selectedObject.type === 'ceiling' && (
+        {selectedObject.type === "ceiling" && (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-2">
               <ApperIcon name="Layers" size={16} />
               <span>Ceiling Properties</span>
             </h3>
-            
+
             <div className="space-y-3">
               <div className="form-group">
                 <label className="form-label">Height (m)</label>
                 <input
                   type="number"
                   value={properties.height || 3}
-                  onChange={(e) => handlePropertyChange('height', Math.max(2, parseFloat(e.target.value) || 3))}
+                  onChange={(e) =>
+                    handlePropertyChange(
+                      "height",
+                      Math.max(2, parseFloat(e.target.value) || 3)
+                    )
+                  }
                   step="0.1"
                   min="2"
                   max="10"
                   className="form-input"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Material Type</label>
                 <select
-                  value={properties.material || 'plaster'}
-                  onChange={(e) => handlePropertyChange('material', e.target.value)}
+                  value={properties.material || "plaster"}
+                  onChange={(e) =>
+                    handlePropertyChange("material", e.target.value)
+                  }
                   className="form-input"
                 >
                   <option value="plaster">Plaster</option>
@@ -506,12 +575,14 @@ return (
                   <option value="tile">Tile</option>
                 </select>
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Texture</label>
                 <select
-                  value={properties.texture || 'smooth'}
-                  onChange={(e) => handlePropertyChange('texture', e.target.value)}
+                  value={properties.texture || "smooth"}
+                  onChange={(e) =>
+                    handlePropertyChange("texture", e.target.value)
+                  }
                   className="form-input"
                 >
                   <option value="smooth">Smooth</option>
@@ -530,20 +601,22 @@ return (
             <ApperIcon name="Zap" size={16} />
             <span>Actions</span>
           </h3>
-          
+
           <div className="space-y-2">
-<motion.button
+            <motion.button
               onClick={() => {
-                // Duplicate furniture with proper ID generation
-                const newObject = {
+                // Duplicate furniture with proper structure
+                const duplicatedFurniture = {
                   ...selectedObject,
                   id: Date.now(), // Generate new integer ID
+                  type: "furniture",
+                  furnitureType: selectedObject.type,
                   position: {
                     ...selectedObject.position,
-                    x: (selectedObject.position?.x || 0) + 1
-                  }
+                    x: (selectedObject.position?.x || 0) + 1,
+                  },
                 };
-                onObjectUpdate('duplicate', newObject);
+                onObjectUpdate("duplicate", duplicatedFurniture);
               }}
               className="w-full btn-ghost text-left flex items-center space-x-2"
               whileHover={{ scale: 1.02 }}
@@ -552,18 +625,23 @@ return (
               <ApperIcon name="Copy" size={16} />
               <span>Duplicate Furniture</span>
             </motion.button>
-            
+
             <motion.button
               onClick={() => {
                 // Reset furniture to default position/rotation
-                const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+                const objectId = Number.isInteger(selectedObject.id)
+                  ? selectedObject.id
+                  : parseInt(selectedObject.id);
                 if (objectId > 0) {
                   const defaultProps = {
                     position: { x: 0, y: 0, z: 0 },
                     rotation: { x: 0, y: 0, z: 0 },
-                    scale: { x: 1, y: 1, z: 1 }
+                    scale: { x: 1, y: 1, z: 1 },
                   };
-                  onObjectUpdate(objectId, { ...selectedObject, ...defaultProps });
+                  onObjectUpdate(objectId, {
+                    ...selectedObject,
+                    ...defaultProps,
+                  });
                 }
               }}
               className="w-full btn-ghost text-left flex items-center space-x-2"
@@ -573,13 +651,19 @@ return (
               <ApperIcon name="RotateCcw" size={16} />
               <span>Reset Position</span>
             </motion.button>
-            
+
             <motion.button
               onClick={() => {
-                if (window.confirm('Are you sure you want to delete this furniture?')) {
-                  const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+                if (
+                  window.confirm(
+                    "Are you sure you want to delete this furniture?"
+                  )
+                ) {
+                  const objectId = Number.isInteger(selectedObject.id)
+                    ? selectedObject.id
+                    : parseInt(selectedObject.id);
                   if (objectId > 0) {
-                    onObjectUpdate(objectId, { action: 'delete' });
+                    onObjectUpdate(objectId, { action: "delete" });
                     onClose();
                   }
                 }
