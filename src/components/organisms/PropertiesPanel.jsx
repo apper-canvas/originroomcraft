@@ -11,16 +11,20 @@ const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
     }
   }, [selectedObject]);
 
-  const handlePropertyChange = (key, value) => {
+const handlePropertyChange = (key, value) => {
     const newProperties = { ...properties, [key]: value };
     setProperties(newProperties);
     
-    if (onObjectUpdate) {
-      onObjectUpdate(selectedObject.id, newProperties);
+    if (onObjectUpdate && selectedObject?.id) {
+      // Validate ID is integer for furniture/structure operations
+      const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+      if (objectId > 0) {
+        onObjectUpdate(objectId, newProperties);
+      }
     }
   };
 
-  const handleNestedPropertyChange = (parentKey, childKey, value) => {
+const handleNestedPropertyChange = (parentKey, childKey, value) => {
     const newProperties = {
       ...properties,
       [parentKey]: {
@@ -30,8 +34,12 @@ const PropertiesPanel = ({ selectedObject, onObjectUpdate, onClose }) => {
     };
     setProperties(newProperties);
     
-    if (onObjectUpdate) {
-      onObjectUpdate(selectedObject.id, newProperties);
+    if (onObjectUpdate && selectedObject?.id) {
+      // Validate ID is integer for furniture/structure operations
+      const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+      if (objectId > 0) {
+        onObjectUpdate(objectId, newProperties);
+      }
     }
   };
 
@@ -524,15 +532,15 @@ return (
           </h3>
           
           <div className="space-y-2">
-            <motion.button
+<motion.button
               onClick={() => {
-                // Duplicate object
+                // Duplicate furniture with proper ID generation
                 const newObject = {
                   ...selectedObject,
-                  id: Date.now().toString(),
+                  id: Date.now(), // Generate new integer ID
                   position: {
                     ...selectedObject.position,
-                    x: selectedObject.position.x + 1
+                    x: (selectedObject.position?.x || 0) + 1
                   }
                 };
                 onObjectUpdate('duplicate', newObject);
@@ -542,32 +550,38 @@ return (
               whileTap={{ scale: 0.98 }}
             >
               <ApperIcon name="Copy" size={16} />
-              <span>Duplicate</span>
+              <span>Duplicate Furniture</span>
             </motion.button>
             
             <motion.button
               onClick={() => {
-                // Reset object properties
-                const defaultProps = {
-                  position: { x: 0, y: 0, z: 0 },
-                  rotation: { x: 0, y: 0, z: 0 },
-                  scale: { x: 1, y: 1, z: 1 }
-                };
-                onObjectUpdate(selectedObject.id, { ...selectedObject, ...defaultProps });
+                // Reset furniture to default position/rotation
+                const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+                if (objectId > 0) {
+                  const defaultProps = {
+                    position: { x: 0, y: 0, z: 0 },
+                    rotation: { x: 0, y: 0, z: 0 },
+                    scale: { x: 1, y: 1, z: 1 }
+                  };
+                  onObjectUpdate(objectId, { ...selectedObject, ...defaultProps });
+                }
               }}
               className="w-full btn-ghost text-left flex items-center space-x-2"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <ApperIcon name="RotateCcw" size={16} />
-              <span>Reset Transform</span>
+              <span>Reset Position</span>
             </motion.button>
             
             <motion.button
               onClick={() => {
-                if (window.confirm('Are you sure you want to delete this object?')) {
-                  onObjectUpdate(selectedObject.id, { action: 'delete' });
-                  onClose();
+                if (window.confirm('Are you sure you want to delete this furniture?')) {
+                  const objectId = Number.isInteger(selectedObject.id) ? selectedObject.id : parseInt(selectedObject.id);
+                  if (objectId > 0) {
+                    onObjectUpdate(objectId, { action: 'delete' });
+                    onClose();
+                  }
                 }
               }}
               className="w-full btn-ghost text-left flex items-center space-x-2 text-red-600 hover:bg-red-50"
@@ -575,7 +589,7 @@ return (
               whileTap={{ scale: 0.98 }}
             >
               <ApperIcon name="Trash2" size={16} />
-              <span>Delete</span>
+              <span>Delete Furniture</span>
             </motion.button>
           </div>
         </div>

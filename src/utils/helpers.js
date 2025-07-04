@@ -1,9 +1,14 @@
-import React from "react";
 import * as THREE from "three";
-import Error from "@/components/ui/Error";
-// Generate unique ID
+import { 
+  getFurnitureDefaults, 
+  processFurnitureMovement, 
+  validateFurnitureSelection, 
+  getFurnitureById 
+} from "@/utils/helpers";
+// Generate unique integer ID
+let lastUsedId = 0;
 export const generateId = () => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return ++lastUsedId;
 };
 
 // Format date
@@ -486,6 +491,40 @@ export const validateDragMovement = (dragState, newPosition, constraints = {}) =
   if (distance > maxDistance) return false;
   
   return true;
+};
+
+// Enhanced furniture movement processing
+export const processFurnitureMovement = (position, roomDimensions, furnitureDimensions, options = {}) => {
+  const { enableSnap = true, gridSize = 0.5, enableConstraints = true } = options;
+  
+  let newPosition = { ...position };
+  
+  // Apply constraints if enabled
+  if (enableConstraints) {
+    newPosition = constrainToRoomBounds(newPosition, roomDimensions, furnitureDimensions);
+  }
+  
+  // Apply grid snapping if enabled
+  if (enableSnap) {
+    newPosition = snapPositionToGrid(newPosition, gridSize);
+  }
+  
+  return newPosition;
+};
+
+// Validate furniture selection by ID
+export const validateFurnitureSelection = (furnitureId, furnitureList) => {
+  if (!Number.isInteger(furnitureId) || furnitureId <= 0) return false;
+  if (!Array.isArray(furnitureList)) return false;
+  
+  return furnitureList.some(furniture => furniture.Id === furnitureId);
+};
+
+// Get furniture by ID with validation
+export const getFurnitureById = (furnitureId, furnitureList) => {
+  if (!validateFurnitureSelection(furnitureId, furnitureList)) return null;
+  
+  return furnitureList.find(furniture => furniture.Id === furnitureId) || null;
 };
 
 // Enhanced structure movement processing

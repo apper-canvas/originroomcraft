@@ -8,7 +8,7 @@ import PropertiesPanel from '@/components/organisms/PropertiesPanel';
 import SaveLoadDialog from '@/components/organisms/SaveLoadDialog';
 import Loading from '@/components/ui/Loading';
 import Error from '@/components/ui/Error';
-import { generateId } from '@/utils/helpers';
+import { generateId, getFurnitureDefaults, processFurnitureMovement } from '@/utils/helpers';
 import { roomService } from '@/services/api/roomService';
 
 const DesignStudio = () => {
@@ -83,42 +83,72 @@ const DesignStudio = () => {
     }
   };
 
-// Enhanced object update handler for real-time movement
+// Enhanced object update handler with proper ID validation and furniture-specific logic
   const handleObjectUpdate = (objectId, updates) => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
       
-      // Determine object type and update accordingly
-      const furnitureIndex = newRoom.furniture.findIndex(item => item.id === objectId);
-      const wallIndex = newRoom.walls.findIndex(wall => wall.id === objectId);
+      // Validate objectId is integer
+      const validObjectId = Number.isInteger(objectId) ? objectId : parseInt(objectId);
+      if (!validObjectId || validObjectId <= 0) {
+        console.warn('Invalid object ID provided to handleObjectUpdate:', objectId);
+        return prevRoom;
+      }
+      
+      // Handle special actions
+      if (updates.action === 'delete') {
+        // Remove furniture by ID
+        newRoom.furniture = newRoom.furniture.filter(item => item.id !== validObjectId);
+        newRoom.walls = newRoom.walls.filter(wall => wall.id !== validObjectId);
+        if (newRoom.ceiling && newRoom.ceiling.id === validObjectId) {
+          newRoom.ceiling = null;
+        }
+        setSelectedObject(null);
+        toast.success('Object deleted successfully!');
+        newRoom.lastModified = new Date();
+        return newRoom;
+      }
+      
+      // Find and update furniture objects with enhanced validation
+      const furnitureIndex = newRoom.furniture.findIndex(item => item.id === validObjectId);
+      const wallIndex = newRoom.walls.findIndex(wall => wall.id === validObjectId);
       
       if (furnitureIndex >= 0) {
-        // Update furniture object
-        newRoom.furniture[furnitureIndex] = { 
+        // Update furniture with position validation
+        const updatedFurniture = { 
           ...newRoom.furniture[furnitureIndex], 
           ...updates 
         };
+        
+        // Validate furniture position if provided
+        if (updates.position) {
+          const roomDims = newRoom.dimensions || { width: 10, length: 10 };
+          const furnitureDims = updatedFurniture.dimensions || { width: 1, depth: 1 };
+          
+          // Process position with constraints
+          updatedFurniture.position = processFurnitureMovement(
+            updates.position,
+            roomDims,
+            furnitureDims,
+            { enableSnap: true, enableConstraints: true }
+          );
+        }
+        
+        newRoom.furniture[furnitureIndex] = updatedFurniture;
+        
+        // Update selected object if it's the one being modified
+        if (selectedObject && selectedObject.id === validObjectId) {
+          setSelectedObject(updatedFurniture);
+        }
       } else if (wallIndex >= 0) {
         // Update wall object
         newRoom.walls[wallIndex] = { 
           ...newRoom.walls[wallIndex], 
           ...updates 
         };
-      } else if (updates.type === 'furniture') {
-        // Handle explicit furniture type updates
-        newRoom.furniture = newRoom.furniture.map(item => 
-          item.id === objectId ? { ...item, ...updates } : item
-        );
-      } else if (updates.type === 'wall') {
-        // Handle explicit wall type updates
-        newRoom.walls = newRoom.walls.map(wall => 
-          wall.id === objectId ? { ...wall, ...updates } : wall
-        );
-      } else if (updates.type === 'ceiling') {
+      } else if (newRoom.ceiling && newRoom.ceiling.id === validObjectId) {
         // Handle ceiling updates
-        if (newRoom.ceiling && newRoom.ceiling.id === objectId) {
-          newRoom.ceiling = { ...newRoom.ceiling, ...updates };
-        }
+        newRoom.ceiling = { ...newRoom.ceiling, ...updates };
       }
       
       // Update modification timestamp for any change
@@ -127,14 +157,15 @@ const DesignStudio = () => {
     });
   };
 
-// Handle adding new objects
+// Handle adding new objects with enhanced furniture creation
   const handleAddObject = (objectData) => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
       
       if (objectData.type === 'clear' && objectData.target === 'furniture') {
-        // Clear all furniture
+        // Clear all furniture with selection reset
         newRoom.furniture = [];
+        setSelectedObject(null);
         toast.success("All furniture cleared!");
       } else if (objectData.type === 'reset' && objectData.target === 'room') {
         // Reset room to defaults
@@ -142,17 +173,32 @@ const DesignStudio = () => {
         newRoom.furniture = [];
         newRoom.walls = [];
         newRoom.ceiling = null;
+        setSelectedObject(null);
         toast.success("Room reset to defaults!");
       } else if (objectData.type === 'furniture') {
-        newRoom.furniture.push({
-          id: generateId(),
+        // Create new furniture with proper ID and defaults
+        const newFurniture = {
+          id: generateId(), // Generate integer ID
           ...objectData,
           position: { x: 0, y: 0, z: 0 },
           rotation: { x: 0, y: 0, z: 0 },
-          scale: { x: 1, y: 1, z: 1 }
-        });
+          scale: { x: 1, y: 1, z: 1 },
+          // Add furniture-specific defaults if not provided
+          dimensions: objectData.dimensions || getFurnitureDefaults(objectData.subType || objectData.name)?.dimensions,
+          color: objectData.color || getFurnitureDefaults(objectData.subType || objectData.name)?.color,
+          material: objectData.material || getFurnitureDefaults(objectData.subType || objectData.name)?.material
+        };
+        
+        newRoom.furniture.push(newFurniture);
+        
+        // Auto-select newly created furniture for immediate editing
+        setSelectedObject(newFurniture);
+        setSelectedTool('select');
+        setPropertiesOpen(true);
+        
+        toast.success(`${objectData.subType || 'Furniture'} added successfully!`);
       } else if (objectData.type === 'wall') {
-        newRoom.walls.push({
+        const newWall = {
           id: generateId(),
           ...objectData,
           position: { x: 0, z: 0 },
@@ -160,7 +206,9 @@ const DesignStudio = () => {
           dimensions: { width: 5, height: 3 },
           color: objectData.color || '#ffffff',
           openings: objectData.openings || []
-        });
+        };
+        newRoom.walls.push(newWall);
+        toast.success('Wall added successfully!');
       } else if (objectData.type === 'ceiling') {
         newRoom.ceiling = {
           id: generateId(),
@@ -170,6 +218,7 @@ const DesignStudio = () => {
           texture: objectData.texture || 'smooth',
           height: objectData.height || newRoom.dimensions.height
         };
+        toast.success('Ceiling added successfully!');
       }
       
       newRoom.lastModified = new Date();

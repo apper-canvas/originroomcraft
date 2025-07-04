@@ -5,13 +5,21 @@ export const useThreeControls = () => {
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const [isControlling, setIsControlling] = useState(false);
+  const [isDraggingObject, setIsDraggingObject] = useState(false);
 
   useEffect(() => {
     if (controlsRef.current) {
       const controls = controlsRef.current;
       
-      const handleStart = () => setIsControlling(true);
-      const handleEnd = () => setIsControlling(false);
+      const handleStart = () => {
+        if (!isDraggingObject) {
+          setIsControlling(true);
+        }
+      };
+      
+      const handleEnd = () => {
+        setIsControlling(false);
+      };
       
       controls.addEventListener('start', handleStart);
       controls.addEventListener('end', handleEnd);
@@ -21,10 +29,10 @@ export const useThreeControls = () => {
         controls.removeEventListener('end', handleEnd);
       };
     }
-  }, []);
+  }, [isDraggingObject]);
 
   const setCameraPosition = (x, y, z) => {
-    if (controlsRef.current) {
+    if (controlsRef.current && camera) {
       camera.position.set(x, y, z);
       controlsRef.current.update();
     }
@@ -65,13 +73,41 @@ export const useThreeControls = () => {
     }
   };
 
+  // Enhanced control management for drag operations
+  const disableControls = () => {
+    if (controlsRef.current) {
+      controlsRef.current.enabled = false;
+      setIsDraggingObject(true);
+    }
+  };
+
+  const enableControls = () => {
+    if (controlsRef.current) {
+      controlsRef.current.enabled = true;
+      setIsDraggingObject(false);
+    }
+  };
+
+  // Focus camera on selected furniture
+  const focusOnObject = (position, distance = 8) => {
+    if (position && controlsRef.current) {
+      const { x = 0, z = 0 } = position;
+      setCameraPosition(x + distance, 5, z + distance);
+      setCameraTarget(x, 0, z);
+    }
+  };
+
   return {
     controlsRef,
     isControlling,
+    isDraggingObject,
     setCameraPosition,
     setCameraTarget,
     resetCamera,
-    setCameraPreset
+    setCameraPreset,
+    disableControls,
+    enableControls,
+    focusOnObject
   };
 };
 
