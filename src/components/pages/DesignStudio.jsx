@@ -334,10 +334,17 @@ const DesignStudio = () => {
           )}
         </AnimatePresence>
 
-        {/* Properties Toggle Button */}
+{/* Properties Toggle Button */}
         <motion.button
           onClick={() => {
-            setPropertiesOpen(true);
+            if (propertiesOpen || selectedObject) {
+              // Close the properties panel
+              setPropertiesOpen(false);
+              setSelectedObject(null);
+            } else {
+              // Open the properties panel
+              setPropertiesOpen(true);
+            }
           }}
           className="fixed right-4 top-1/2 transform -translate-y-1/2 z-30 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200"
           whileHover={{ scale: 1.05 }}
