@@ -246,20 +246,19 @@ return (
             />
           </Box>
         );
+);
       })}
     </group>
   );
 }
-
-// Furniture Component with enhanced validation and error handling
-function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMode, roomDimensions, orbitControlsRef }) {
-  const meshRef = useRef();
-  const groupRef = useRef();
-  const { camera, gl } = useThree();
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, z: 0 });
-  const [dragActive, setDragActive] = useState(false);
-
+function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMode, roomDimensions, orbitControlsRef, selectedTool }) {
+  const meshRef = useRef()
+  const groupRef = useRef()
+  const { gl, camera } = useThree()
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, z: 0 })
+  const [dragActive, setDragActive] = useState(false)
+  const color = isSelected ? '#3b82f6' : getFurnitureColor(furniture.type)
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   // Material color effect - only runs when furniture is valid
   useEffect(() => {
@@ -400,20 +399,15 @@ return () => {
     setIsDragging(true);
     setDragActive(true);
     
-    // Calculate world position from screen coordinates
+// Calculate world position from screen coordinates
     const rect = gl.domElement.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
     
     try {
+      // Calculate drag offset for smooth dragging
       const worldPos = screenToWorld(screenX, screenY, camera, gl.domElement);
-      const currentPos = { 
-        x: validatedPosition[0], 
-        y: validatedPosition[1], 
-        z: validatedPosition[2] 
-      };
-      
-      const offset = calculateDragOffset(worldPos, currentPos);
+      const offset = calculateDragOffset(worldPos, validatedPosition);
       setDragOffset(offset);
       
       // Set cursor state
@@ -428,7 +422,6 @@ return () => {
       setDragActive(false);
     }
   };
-
 const handlePointerMove = (e) => {
     if (!isDragging || !dragActive || !isDragMode) return;
 
@@ -467,7 +460,6 @@ const handlePointerMove = (e) => {
       console.error('Error during drag move:', error);
     }
   };
-
 const handlePointerUp = (e) => {
     if (!isDragging && !dragActive) return;
     
@@ -492,9 +484,9 @@ const handlePointerUp = (e) => {
       <Box
         ref={meshRef}
         args={geometry}
-        position={[0, geometry[1] / 2, 0]}
+position={[0, geometry[1] / 2, 0]}
         onPointerDown={handlePointerDown}
-onPointerEnter={() => {
+        onPointerEnter={() => {
           if (isDragMode && !isDragging && gl.domElement) {
             gl.domElement.style.cursor = 'grab';
           }
@@ -520,7 +512,7 @@ onPointerEnter={() => {
         </mesh>
       )}
     </group>
-);
+  );
 }
 
 // Scene Setup
@@ -542,13 +534,12 @@ function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedT
       <ambientLight intensity={0.6} />
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <pointLight position={[0, 10, 0]} intensity={0.5} />
-      
 <Grid
         sectionSize={5}
         sectionThickness={1}
         sectionColor="#cbd5e1"
-/>
-<Room
+      />
+      <Room
         room={room}
         selectedObject={selectedObject}
         onObjectSelect={onObjectSelect}
@@ -558,7 +549,7 @@ function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedT
       />
     </>
   );
-};
+}
 
 // Main Viewport Component  
 const ThreeViewport = ({
@@ -567,12 +558,13 @@ const ThreeViewport = ({
   selectedObject,
   onObjectSelect,
   onObjectUpdate,
-  cameraView,
-onCameraViewChange
+cameraView,
+  onCameraViewChange
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const orbitControlsRef = useRef();
-const handleCameraPreset = (preset) => {
+  
+  const handleCameraPreset = (preset) => {
     if (!orbitControlsRef.current) return;
     
     const controls = orbitControlsRef.current;
@@ -606,14 +598,13 @@ const handleCameraPreset = (preset) => {
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-white to-gray-50">
-      {/* 3D Canvas */}
 {/* 3D Canvas */}
       <Canvas
         camera={{ position: [5, 5, 5], fov: 75 }}
         shadows
         className="w-full h-full"
->
-<OrbitControls
+      >
+        <OrbitControls
           ref={orbitControlsRef}
           enablePan={true}
           enableZoom={true}
@@ -621,7 +612,7 @@ const handleCameraPreset = (preset) => {
           onStart={() => setIsDragging(true)}
           onEnd={() => setIsDragging(false)}
         />
-<Scene
+        <Scene
           room={room}
           selectedObject={selectedObject}
           onObjectSelect={onObjectSelect}
@@ -681,7 +672,6 @@ const handleCameraPreset = (preset) => {
           </div>
         </motion.div>
       )}
-
 {/* Room Dimensions Display */}
       {room?.dimensions && (
         <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-lg px-4 py-2 shadow-lg">
