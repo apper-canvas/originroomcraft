@@ -73,10 +73,14 @@ const DesignStudio = () => {
     }
   };
 
-  // Handle object selection in 3D scene
+// Handle object selection in 3D scene
   const handleObjectSelect = (object) => {
     setSelectedObject(object);
     setSelectedTool('select');
+    // Ensure properties panel is visible when object is selected
+    if (object) {
+      setPropertiesOpen(true);
+    }
   };
 
 // Handle object updates
@@ -309,9 +313,9 @@ const DesignStudio = () => {
           />
         </div>
 
-        {/* Properties Panel */}
+{/* Properties Panel */}
         <AnimatePresence>
-{(selectedObject || propertiesOpen) && (
+          {(selectedObject || propertiesOpen) && (
             <motion.div
               className="w-80 max-w-[90vw] min-w-[280px] lg:w-80 lg:max-w-80 bg-white/90 backdrop-blur-md border-l border-gray-200/50 h-full max-h-screen overflow-hidden"
               initial={{ x: 320 }}
@@ -333,13 +337,15 @@ const DesignStudio = () => {
 
         {/* Properties Toggle Button */}
         <motion.button
-          onClick={() => setPropertiesOpen(!propertiesOpen)}
+          onClick={() => {
+            setPropertiesOpen(true);
+          }}
           className="fixed right-4 top-1/2 transform -translate-y-1/2 z-30 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           <ApperIcon 
-            name={propertiesOpen ? "ChevronRight" : "Settings"} 
+            name={propertiesOpen || selectedObject ? "ChevronRight" : "Settings"} 
             size={20} 
             className="text-gray-600" 
           />
