@@ -83,33 +83,45 @@ const DesignStudio = () => {
     }
   };
 
-// Handle object updates
+// Enhanced object update handler for real-time movement
   const handleObjectUpdate = (objectId, updates) => {
     setRoom(prevRoom => {
       const newRoom = { ...prevRoom };
       
-      // Handle furniture updates (including position changes from dragging)
-      if (updates.type === 'furniture' || updates.position) {
+      // Determine object type and update accordingly
+      const furnitureIndex = newRoom.furniture.findIndex(item => item.id === objectId);
+      const wallIndex = newRoom.walls.findIndex(wall => wall.id === objectId);
+      
+      if (furnitureIndex >= 0) {
+        // Update furniture object
+        newRoom.furniture[furnitureIndex] = { 
+          ...newRoom.furniture[furnitureIndex], 
+          ...updates 
+        };
+      } else if (wallIndex >= 0) {
+        // Update wall object
+        newRoom.walls[wallIndex] = { 
+          ...newRoom.walls[wallIndex], 
+          ...updates 
+        };
+      } else if (updates.type === 'furniture') {
+        // Handle explicit furniture type updates
         newRoom.furniture = newRoom.furniture.map(item => 
           item.id === objectId ? { ...item, ...updates } : item
         );
       } else if (updates.type === 'wall') {
+        // Handle explicit wall type updates
         newRoom.walls = newRoom.walls.map(wall => 
           wall.id === objectId ? { ...wall, ...updates } : wall
         );
-      } else {
-        // Handle generic object updates (like position-only updates)
-        const furnitureIndex = newRoom.furniture.findIndex(item => item.id === objectId);
-        if (furnitureIndex >= 0) {
-          newRoom.furniture[furnitureIndex] = { ...newRoom.furniture[furnitureIndex], ...updates };
-        } else {
-          const wallIndex = newRoom.walls.findIndex(wall => wall.id === objectId);
-          if (wallIndex >= 0) {
-            newRoom.walls[wallIndex] = { ...newRoom.walls[wallIndex], ...updates };
-          }
+      } else if (updates.type === 'ceiling') {
+        // Handle ceiling updates
+        if (newRoom.ceiling && newRoom.ceiling.id === objectId) {
+          newRoom.ceiling = { ...newRoom.ceiling, ...updates };
         }
       }
       
+      // Update modification timestamp for any change
       newRoom.lastModified = new Date();
       return newRoom;
     });

@@ -384,7 +384,7 @@ return () => {
   // Validate rotation
   const validatedRotation = [0, getRotationY(), 0];
   
-// Drag event handlers
+// Enhanced drag event handlers with improved error handling
   const handlePointerDown = (e) => {
     // Always handle selection first
     e.stopPropagation();
@@ -395,10 +395,16 @@ return () => {
       return;
     }
 
+    // Validate prerequisites for dragging
+    if (!gl?.domElement || !camera) {
+      console.warn('Required Three.js components not available for dragging');
+      return;
+    }
+
     setIsDragging(true);
     setDragActive(true);
     
-// Calculate world position from screen coordinates
+    // Calculate world position from screen coordinates
     const rect = gl.domElement.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
@@ -406,25 +412,36 @@ return () => {
     try {
       // Calculate drag offset for smooth dragging
       const worldPos = screenToWorld(screenX, screenY, camera, gl.domElement);
-      const offset = calculateDragOffset(worldPos, validatedPosition);
-      setDragOffset(offset);
-      
-      // Set cursor state
-      if (gl.domElement) {
-        gl.domElement.style.cursor = 'grabbing';
+      if (worldPos) {
+        const offset = calculateDragOffset(worldPos, {
+          x: validatedPosition[0],
+          y: validatedPosition[1], 
+          z: validatedPosition[2]
+        });
+        setDragOffset(offset);
       }
       
-      // Disable OrbitControls during drag - will be handled by effect
+      // Set cursor state
+      gl.domElement.style.cursor = 'grabbing';
+      
+      // Prevent default to avoid unwanted browser behaviors
+      e.preventDefault();
+      
     } catch (error) {
-      console.error('Error starting drag:', error);
+      console.error('Error starting drag operation:', error);
       setIsDragging(false);
       setDragActive(false);
     }
   };
-const handlePointerMove = (e) => {
+
+  const handlePointerMove = (e) => {
     if (!isDragging || !dragActive || !isDragMode) return;
 
+    // Validate prerequisites
+    if (!gl?.domElement || !camera) return;
+
     e.stopPropagation();
+    e.preventDefault();
     
     const rect = gl.domElement.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
@@ -432,42 +449,48 @@ const handlePointerMove = (e) => {
     
     try {
       const worldPos = screenToWorld(screenX, screenY, camera, gl.domElement);
+      if (!worldPos) return;
+      
       const newPos = applyDragOffset(worldPos, dragOffset);
       
-      // Get furniture dimensions for boundary checking
-      const furnitureDimensions = {
+      // Get structure dimensions for boundary checking
+      const structureDimensions = {
         width: geometry[0],
-        depth: geometry[2]
+        depth: geometry[2],
+        height: geometry[1]
       };
       
-      // Process position with constraints and snapping
+      // Process position with enhanced constraints and snapping
       const processedPos = processDragPosition(
         newPos, 
         roomDimensions || { width: 10, length: 10 }, 
-        furnitureDimensions,
+        structureDimensions,
         true, // enable snapping
         0.5   // grid size
       );
       
-      // Update furniture position in real-time
-      if (onDrag) {
+      // Validate the movement before applying
+      if (processedPos && onDrag) {
         onDrag(furniture.id, {
           position: processedPos
         });
       }
     } catch (error) {
-      console.error('Error during drag move:', error);
+      console.error('Error during drag move operation:', error);
     }
   };
-const handlePointerUp = (e) => {
+
+  const handlePointerUp = (e) => {
     if (!isDragging && !dragActive) return;
     
     e.stopPropagation();
+    e.preventDefault();
+    
     setIsDragging(false);
     setDragActive(false);
     
     // Reset cursor state
-    if (gl.domElement) {
+    if (gl?.domElement) {
       gl.domElement.style.cursor = isDragMode ? 'grab' : 'default';
     }
     

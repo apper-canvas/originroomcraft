@@ -472,7 +472,7 @@ export const clearDragState = () => {
   };
 };
 
-// Validate drag movement
+// Validate drag movement with constraints
 export const validateDragMovement = (dragState, newPosition, constraints = {}) => {
   if (!isDragInProgress(dragState) || !newPosition) return false;
   
@@ -486,4 +486,39 @@ export const validateDragMovement = (dragState, newPosition, constraints = {}) =
   if (distance > maxDistance) return false;
   
   return true;
+};
+
+// Enhanced structure movement processing
+export const processStructureMovement = (position, roomDimensions, structureDimensions, options = {}) => {
+  const { enableSnap = true, gridSize = 0.5, enableConstraints = true } = options;
+  
+  let newPosition = { ...position };
+  
+  // Apply constraints if enabled
+  if (enableConstraints) {
+    newPosition = constrainToRoomBounds(newPosition, roomDimensions, structureDimensions);
+  }
+  
+  // Apply grid snapping if enabled
+  if (enableSnap) {
+    newPosition = snapPositionToGrid(newPosition, gridSize);
+  }
+  
+  return newPosition;
+};
+
+// Calculate drag boundaries for preview
+export const calculateDragBoundaries = (roomDimensions, structureDimensions) => {
+  if (!roomDimensions || !structureDimensions) return null;
+  
+  const { width, length } = roomDimensions;
+  const structWidth = structureDimensions?.width || 1;
+  const structDepth = structureDimensions?.depth || 1;
+  
+  return {
+    minX: -(width / 2) + (structWidth / 2),
+    maxX: (width / 2) - (structWidth / 2),
+    minZ: -(length / 2) + (structDepth / 2),
+    maxZ: (length / 2) - (structDepth / 2)
+  };
 };
