@@ -6,10 +6,9 @@ import * as THREE from "three";
 import { applyDragOffset, calculateDragOffset, getFurnitureColor, processDragPosition, screenToWorld } from "@/utils/helpers";
 import ApperIcon from "@/components/ApperIcon";
 // Room component that renders the 3D room structure
-function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool, orbitControlsRef }) {
+function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpdate, orbitControlsRef }) {
   const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
   // Defensive checks for valid dimensions
-// Defensive checks for valid dimensions
   if (!width || !length || !height || width <= 0 || length <= 0 || height <= 0) {
     console.warn('Invalid room dimensions:', { width, length, height })
     return null
@@ -26,7 +25,7 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
         <meshStandardMaterial color="#f8f9fa" />
       </Plane>
       
-{/* Walls */}
+      {/* Walls */}
       <group>
         {(room?.walls || []).map((wall) => (
           <WallComponent
@@ -38,7 +37,7 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
         ))}
       </group>
 
-{/* Furniture */}
+      {/* Furniture */}
       {(room?.furniture || []).map((furniture) => (
         <FurnitureComponent
           key={furniture.id}
@@ -51,7 +50,8 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
           orbitControlsRef={orbitControlsRef}
         />
       ))}
-{/* Room Boundaries */}
+      
+      {/* Room Boundaries */}
       <group>
         {/* Front Wall */}
         {width > 0 && height > 0 && (
@@ -97,7 +97,8 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
           </Plane>
         )}
       </group>
-{/* Ceiling */}
+      
+      {/* Ceiling */}
       {room?.ceiling && (
         <CeilingComponent
           ceiling={room.ceiling}
@@ -108,7 +109,7 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
       )}
     </group>
   );
-};
+}
 
 // Ceiling Component
 function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
