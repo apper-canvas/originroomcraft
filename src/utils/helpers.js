@@ -395,6 +395,57 @@ export const resetRoomToDefaults = (room) => {
     furniture: [],
     walls: [],
     ceiling: null,
-    lastModified: new Date().toISOString()
+lastModified: new Date().toISOString()
   };
+};
+
+// Enhanced drag utilities for better structure movement
+export const isDragInProgress = (dragState) => {
+  return dragState && dragState.isDragging === true;
+};
+
+// Calculate smooth drag transition
+export const calculateSmoothDragPosition = (startPos, endPos, progress = 1) => {
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+  
+  return {
+    x: startPos.x + (endPos.x - startPos.x) * clampedProgress,
+    y: startPos.y + (endPos.y - startPos.y) * clampedProgress,
+    z: startPos.z + (endPos.z - startPos.z) * clampedProgress
+  };
+};
+
+// Enhanced position validation for structures
+export const validateStructurePosition = (position, roomDimensions, structureDimensions) => {
+  if (!position || !roomDimensions) return false;
+  
+  const { x, z } = position;
+  const { width, length } = roomDimensions;
+  const structWidth = structureDimensions?.width || 1;
+  const structDepth = structureDimensions?.depth || 1;
+  
+  // Check if structure fits within room bounds
+  const minX = -(width / 2) + (structWidth / 2);
+  const maxX = (width / 2) - (structWidth / 2);
+  const minZ = -(length / 2) + (structDepth / 2);
+  const maxZ = (length / 2) - (structDepth / 2);
+  
+  return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
+};
+
+// Process structure drag with enhanced validation
+export const processStructureDrag = (position, roomDimensions, structureDimensions, enableSnap = true) => {
+  let newPosition = { ...position };
+  
+  // Validate structure can be placed at position
+  if (!validateStructurePosition(newPosition, roomDimensions, structureDimensions)) {
+    newPosition = constrainToRoomBounds(newPosition, roomDimensions, structureDimensions);
+  }
+  
+  // Apply grid snapping if enabled
+  if (enableSnap) {
+    newPosition = snapPositionToGrid(newPosition, 0.5);
+  }
+  
+  return newPosition;
 };

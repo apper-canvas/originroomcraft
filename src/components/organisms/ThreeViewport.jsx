@@ -6,9 +6,8 @@ import * as THREE from "three";
 import { applyDragOffset, calculateDragOffset, getFurnitureColor, processDragPosition, screenToWorld } from "@/utils/helpers";
 import ApperIcon from "@/components/ApperIcon";
 // Room component that renders the 3D room structure
-function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool }) {
+function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool, orbitControlsRef }) {
   const { width = 10, length = 10, height = 3 } = room?.dimensions || {}
-  
   // Defensive checks for valid dimensions
 // Defensive checks for valid dimensions
   if (!width || !length || !height || width <= 0 || length <= 0 || height <= 0) {
@@ -49,6 +48,7 @@ function Room({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTo
           onDrag={onObjectUpdate}
           isDragMode={selectedTool === 'select' || selectedTool === 'move'}
           roomDimensions={room?.dimensions}
+          orbitControlsRef={orbitControlsRef}
         />
       ))}
 {/* Room Boundaries */}
@@ -250,7 +250,7 @@ return (
 }
 
 // Furniture Component with enhanced validation and error handling
-function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMode, roomDimensions }) {
+function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMode, roomDimensions, orbitControlsRef }) {
   const meshRef = useRef();
   const groupRef = useRef();
   const { camera, gl } = useThree();
@@ -387,9 +387,8 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
       }
       
       // Disable OrbitControls during move tool drag
-      const orbitControls = gl.domElement.querySelector('canvas')?.orbitControls;
-      if (orbitControls) {
-        orbitControls.enabled = false;
+      if (orbitControlsRef?.current) {
+        orbitControlsRef.current.enabled = false;
       }
     } catch (error) {
       console.error('Error starting drag:', error);
@@ -442,15 +441,14 @@ function FurnitureComponent({ furniture, isSelected, onSelect, onDrag, isDragMod
 e.stopPropagation();
     setIsDragging(false);
     
-    // Re-enable orbit controls
+// Re-enable orbit controls
     if (gl.domElement) {
       gl.domElement.style.cursor = 'default';
     }
     
     // Re-enable OrbitControls after move tool drag
-    const orbitControls = gl.domElement.querySelector('canvas')?.orbitControls;
-    if (orbitControls) {
-      orbitControls.enabled = true;
+    if (orbitControlsRef?.current) {
+      orbitControlsRef.current.enabled = true;
     }
   };
 
@@ -496,7 +494,7 @@ e.stopPropagation();
 
 // Scene Setup
 // Scene component that contains all 3D elements
-function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool }) {
+function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedTool, orbitControlsRef }) {
   const controlsRef = useRef()
   const { camera } = useThree()
   
@@ -519,13 +517,13 @@ function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedT
         sectionThickness={1}
         sectionColor="#cbd5e1"
 />
-      
-      <Room
+<Room
         room={room}
         selectedObject={selectedObject}
         onObjectSelect={onObjectSelect}
         onObjectUpdate={onObjectUpdate}
         selectedTool={selectedTool}
+        orbitControlsRef={orbitControlsRef}
       />
     </>
   );
@@ -539,15 +537,14 @@ const ThreeViewport = ({
   onObjectSelect,
   onObjectUpdate,
   cameraView,
-  onCameraViewChange
+onCameraViewChange
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const controlsRef = useRef();
-
-  const handleCameraPreset = (preset) => {
-    if (!controlsRef.current) return;
+  const orbitControlsRef = useRef();
+const handleCameraPreset = (preset) => {
+    if (!orbitControlsRef.current) return;
     
-    const controls = controlsRef.current;
+    const controls = orbitControlsRef.current;
     const camera = controls.object;
     
     switch (preset) {
@@ -584,22 +581,22 @@ const ThreeViewport = ({
         camera={{ position: [5, 5, 5], fov: 75 }}
         shadows
         className="w-full h-full"
-      >
+>
         <OrbitControls
-          ref={controlsRef}
+          ref={orbitControlsRef}
           enablePan={selectedTool !== 'move'}
           enableZoom={selectedTool !== 'move'}
           enableRotate={selectedTool !== 'move'}
           onStart={() => setIsDragging(true)}
           onEnd={() => setIsDragging(false)}
         />
-        
-        <Scene
+<Scene
           room={room}
           selectedObject={selectedObject}
           onObjectSelect={onObjectSelect}
           onObjectUpdate={onObjectUpdate}
           selectedTool={selectedTool}
+          orbitControlsRef={orbitControlsRef}
         />
       </Canvas>
       <div className="absolute bottom-4 left-4 flex space-x-2">
