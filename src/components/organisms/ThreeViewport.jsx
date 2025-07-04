@@ -141,11 +141,17 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions, selec
 <Plane
       ref={meshRef}
       args={[width, length]}
-      position={[0, height, 0]}
+position={[0, height, 0]}
       rotation={[Math.PI / 2, 0, 0]}
       onClick={(e) => {
-        e.stopPropagation();
+        if (selectedTool === 'move') {
+          e.stopPropagation();
+          e.preventDefault();
+        } else {
+          e.stopPropagation();
+        }
         onSelect?.(ceiling);
+onSelect?.(ceiling);
       }}
       onPointerEnter={() => {
         if ((selectedTool === 'move' || selectedTool === 'select') && gl?.domElement) {
@@ -156,7 +162,6 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions, selec
         if (gl?.domElement) {
           gl.domElement.style.cursor = 'default';
         }
-      }}
     >
       <meshStandardMaterial 
         color={ceiling.color || '#f8f9fa'} 
@@ -228,7 +233,12 @@ return (
         position={validatedPosition}
         rotation={validatedRotation}
         onClick={(e) => {
-          e.stopPropagation();
+          if (selectedTool === 'move') {
+            e.stopPropagation();
+            e.preventDefault();
+          } else {
+            e.stopPropagation();
+          }
           onSelect?.(wall);
         }}
         onPointerEnter={() => {
@@ -527,10 +537,10 @@ return () => {
       position={validatedPosition} 
       rotation={validatedRotation}
     >
-      <Box
+<Box
         ref={meshRef}
         args={geometry}
-position={[0, geometry[1] / 2, 0]}
+        position={[0, geometry[1] / 2, 0]}
         onPointerDown={handlePointerDown}
         onPointerEnter={() => {
           if (isDragMode && !isDragging && gl.domElement) {
