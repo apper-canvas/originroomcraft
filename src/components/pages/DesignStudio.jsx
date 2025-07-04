@@ -76,7 +76,11 @@ const DesignStudio = () => {
 // Handle object selection in 3D scene
   const handleObjectSelect = (object) => {
     setSelectedObject(object);
-    setSelectedTool('select');
+    // Only change tool to 'select' if not currently using 'move' tool
+    // This preserves move tool when selecting structure elements
+    if (selectedTool !== 'move') {
+      setSelectedTool('select');
+    }
     // Ensure properties panel is visible when object is selected
     if (object) {
       setPropertiesOpen(true);

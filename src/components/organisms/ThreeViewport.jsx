@@ -27,12 +27,13 @@ function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpda
       
       {/* Walls */}
       <group>
-        {(room?.walls || []).map((wall) => (
+{(room?.walls || []).map((wall) => (
           <WallComponent
             key={wall.id}
             wall={wall}
             isSelected={selectedObject?.id === wall.id}
             onSelect={() => onObjectSelect(wall)}
+            selectedTool={selectedTool}
           />
         ))}
       </group>
@@ -101,11 +102,12 @@ function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpda
       
       {/* Ceiling */}
       {room?.ceiling && (
-        <CeilingComponent
+<CeilingComponent
           ceiling={room.ceiling}
           isSelected={selectedObject?.id === room.ceiling.id}
           onSelect={() => onObjectSelect(room.ceiling)}
           roomDimensions={room?.dimensions}
+          selectedTool={selectedTool}
         />
       )}
     </group>
@@ -113,8 +115,9 @@ function Room({ room, selectedTool, selectedObject, onObjectSelect, onObjectUpda
 }
 
 // Ceiling Component
-function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
+function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions, selectedTool }) {
   const meshRef = useRef();
+  const { gl } = useThree();
 
   useEffect(() => {
     if (!ceiling || typeof ceiling !== 'object' || !meshRef.current) return;
@@ -135,7 +138,7 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
   const height = ceiling.height || 3;
 
   return (
-    <Plane
+<Plane
       ref={meshRef}
       args={[width, length]}
       position={[0, height, 0]}
@@ -143,6 +146,16 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
       onClick={(e) => {
         e.stopPropagation();
         onSelect?.(ceiling);
+      }}
+      onPointerEnter={() => {
+        if ((selectedTool === 'move' || selectedTool === 'select') && gl?.domElement) {
+          gl.domElement.style.cursor = 'grab';
+        }
+      }}
+      onPointerLeave={() => {
+        if (gl?.domElement) {
+          gl.domElement.style.cursor = 'default';
+        }
       }}
     >
       <meshStandardMaterial 
@@ -156,9 +169,10 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions }) {
 }
 
 // Wall Component
-function WallComponent({ wall, isSelected, onSelect }) {
+function WallComponent({ wall, isSelected, onSelect, selectedTool }) {
   // CRITICAL: All hooks must be called before any conditional returns
   const meshRef = useRef();
+  const { gl } = useThree();
 
   // useEffect must be called before any early returns to maintain hook order
   useEffect(() => {
@@ -216,6 +230,16 @@ return (
         onClick={(e) => {
           e.stopPropagation();
           onSelect?.(wall);
+        }}
+        onPointerEnter={() => {
+          if ((selectedTool === 'move' || selectedTool === 'select') && gl?.domElement) {
+            gl.domElement.style.cursor = 'grab';
+          }
+        }}
+        onPointerLeave={() => {
+          if (gl?.domElement) {
+            gl.domElement.style.cursor = 'default';
+          }
         }}
       >
         <meshStandardMaterial color={isSelected ? 0x3b82f6 : 0x6b7280} />
@@ -561,7 +585,7 @@ function Scene({ room, selectedObject, onObjectSelect, onObjectUpdate, selectedT
         sectionThickness={1}
         sectionColor="#cbd5e1"
       />
-      <Room
+<Room
         room={room}
         selectedObject={selectedObject}
         onObjectSelect={onObjectSelect}
