@@ -141,7 +141,7 @@ function CeilingComponent({ ceiling, isSelected, onSelect, roomDimensions, selec
 <Plane
       ref={meshRef}
       args={[width, length]}
-position={[0, height, 0]}
+      position={[0, height, 0]}
       rotation={[Math.PI / 2, 0, 0]}
       onClick={(e) => {
         if (selectedTool === 'move') {
@@ -151,7 +151,6 @@ position={[0, height, 0]}
           e.stopPropagation();
         }
         onSelect?.(ceiling);
-onSelect?.(ceiling);
       }}
       onPointerEnter={() => {
         if ((selectedTool === 'move' || selectedTool === 'select') && gl?.domElement) {
@@ -162,6 +161,7 @@ onSelect?.(ceiling);
         if (gl?.domElement) {
           gl.domElement.style.cursor = 'default';
         }
+      }}
     >
       <meshStandardMaterial 
         color={ceiling.color || '#f8f9fa'} 
@@ -172,7 +172,6 @@ onSelect?.(ceiling);
     </Plane>
   );
 }
-
 // Wall Component
 function WallComponent({ wall, isSelected, onSelect, selectedTool }) {
   // CRITICAL: All hooks must be called before any conditional returns
